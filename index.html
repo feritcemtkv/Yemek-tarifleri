@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>Instagram Tarif Arşivim</title>
+<title>Yapay Zeka Destekli Tarif Arşivim</title>
 <style>
   :root{
     --bg:#f8fafc;
     --card-bg:#ffffff;
-    --primary:#e11d48;
-    --primary-soft:#ffe4e6;
+    --primary:#4f46e5;
+    --primary-soft:#eef2ff;
     --text:#1e293b;
     --text-soft:#64748b;
     --line:#e2e8f0;
@@ -26,76 +26,96 @@
   }
   header h1{font-size:18px; font-weight:700; margin:0; color:var(--primary);}
   
-  main{padding:16px; max-width:6,00px; margin:0 auto 80px;}
+  main{padding:16px; max-width:600px; margin:0 auto 80px;}
 
-  .add-box{
+  .box{
     background:#fff; border:1px solid var(--line); border-radius:var(--radius);
-    padding:16px; margin-bottom:20px; box-shadow:0 4px 12px rgba(0,0,0,.03);
+    padding:16px; margin-bottom:16px; box-shadow:0 4px 12px rgba(0,0,0,.03);
   }
-  .add-box h3{margin:0 0 10px; font-size:15px; color:var(--text);}
-  .input-group{display:flex; gap:8px;}
-  .input-group input{
-    flex:1; padding:10px 14px; border:1px solid var(--line);
-    border-radius:10px; font-size:14px; outline:none;
+  .box h3{margin:0 0 10px; font-size:15px; color:var(--text);}
+  
+  input, textarea{
+    width:100%; padding:10px 14px; border:1px solid var(--line);
+    border-radius:10px; font-size:14px; outline:none; font-family:inherit; margin-bottom:8px;
   }
-  .input-group input:focus{border-color:var(--primary);}
-  .input-group button{
-    background:var(--primary); color:#fff; border:none;
-    padding:0 18px; border-radius:10px; font-weight:600; cursor:pointer; font-size:14px;
+  input:focus, textarea:focus{border-color:var(--primary);}
+  textarea{resize:vertical; min-height:80px;}
+
+  button.primary{
+    background:var(--primary); color:#fff; border:none; width:100%;
+    padding:12px; border-radius:10px; font-weight:600; cursor:pointer; font-size:14px;
   }
+  button.primary:active{transform:scale(0.98);}
 
   .recipe-card{
     background:var(--card-bg); border:1px solid var(--line);
     border-radius:var(--radius); margin-bottom:16px; overflow:hidden;
     box-shadow:0 2px 8px rgba(0,0,0,.04); padding:16px;
   }
-  .recipe-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;}
-  .recipe-title{font-size:16px; font-weight:700; margin:0 0 4px;}
+  .recipe-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;}
+  .recipe-title{font-size:17px; font-weight:700; margin:0 0 4px; font-family:Georgia,serif;}
   .recipe-cat{font-size:11px; background:var(--primary-soft); color:var(--primary); padding:2px 8px; border-radius:999px; font-weight:700; text-transform:uppercase;}
   
-  .details-box{font-size:13.5px; line-height:1.4; margin-bottom:12px;}
+  .details-box{font-size:13.5px; line-height:1.5; margin-bottom:12px;}
   .details-box b{font-size:11px; text-transform:uppercase; color:var(--text-soft); display:block; margin-bottom:4px;}
-  .details-box ul{margin:0; padding-left:16px;}
+  .details-box ul{margin:0 0 8px; padding-left:16px;}
   
   .card-footer{display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line); padding-top:12px; margin-top:12px;}
-  .watch-btn{
-    background:#0f172a; color:#fff; text-decoration:none; padding:8px 14px;
-    border-radius:8px; font-size:13px; font-weight:600; display:inline-block;
-  }
+  .watch-btn{color:var(--primary); text-decoration:none; font-size:13px; font-weight:600;}
   .delete-btn{background:none; border:none; color:#ef4444; font-size:13px; cursor:pointer; font-weight:600;}
 
   .empty{text-align:center; padding:40px; color:var(--text-soft);}
+  .api-settings{font-size:12px; color:var(--text-soft); margin-bottom:12px; display:flex; gap:6px;}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>📸 Instagram Tarif Arşivim</h1>
+  <h1>🤖 Yapay Zeka Tarif Arşivi</h1>
   <span id="count" style="font-size:13px; color:var(--text-soft);">0 tarif</span>
 </header>
 
 <main>
-  <div class="add-box">
-    <h3>Yeni Tarif Ekle</h3>
-    <div class="input-group">
-      <input type="text" id="instaLink" placeholder="Instagram linkini yapıştır (örn: https://www.instagram.com/p/...)">
-      <button id="addBtn">Ekle</button>
+  <!-- API Ayar Kutusu -->
+  <div class="box" style="background:#f1f5f9;">
+    <h3>🔑 Gemini AI Anahtarı (API Key)</h3>
+    <div class="api-settings">
+      <input type="password" id="apiKeyInput" placeholder="Google Gemini API anahtarınızı buraya girin..." style="margin-bottom:0;">
+      <button onclick="saveApiKey()" style="width:auto; padding:0 14px; background:#0f172a; color:#fff; border:none; border-radius:10px; cursor:pointer;">Kaydet</button>
     </div>
+  </div>
+
+  <!-- Tarif Ekleme Kutusu -->
+  <div class="box">
+    <h3>✨ Yeni Tarif Ekle (Yapay Zeka Düzenlemeli)</h3>
+    <input type="text" id="instaUrl" placeholder="Instagram Tarif Linki (isteğe bağlı)">
+    <textarea id="rawText" placeholder="Tarif metnini veya malzemeleri buraya kopyala yapıştır yap. Yapay zeka Türkçeye çevirip gram/bardak ölçüleriyle düzenlesin..."></textarea>
+    <button class="primary" id="aiBtn">Yapay Zeka ile Düzenle ve Arşive Ekle</button>
   </div>
 
   <div id="recipeList"></div>
 </main>
 
 <script>
-let recipes = JSON.parse(localStorage.getItem('my_recipes_v2') || '[]');
+let recipes = JSON.parse(localStorage.getItem('ai_recipes_v1') || '[]');
 
 const $list = document.getElementById('recipeList');
 const $count = document.getElementById('count');
-const $input = document.getElementById('instaLink');
-const $addBtn = document.getElementById('addBtn');
+const $urlInput = document.getElementById('instaUrl');
+const $rawInput = document.getElementById('rawText');
+const $aiBtn = document.getElementById('aiBtn');
+const $apiKeyInput = document.getElementById('apiKeyInput');
 
-function save(){
-  localStorage.setItem('my_recipes_v2', JSON.stringify(recipes));
+// Kayıtlı API anahtarını yükle
+$apiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
+
+function saveApiKey(){
+  localStorage.setItem('gemini_api_key', $apiKeyInput.value.trim());
+  alert('API Anahtarı kaydedildi!');
+}
+
+function saveRecipes(){
+  localStorage.setItem('ai_recipes_v1', JSON.stringify(recipes));
   render();
 }
 
@@ -103,7 +123,7 @@ function render(){
   $count.textContent = recipes.length + ' tarif';
 
   if(!recipes.length){
-    $list.innerHTML = '<div class="empty">Henüz hiç tarif eklemedin.<br>Yukarıdaki kutuya Instagram linki yapıştırarak başlayabilirsin!</div>';
+    $list.innerHTML = '<div class="empty">Henüz arşivde tarif yok.<br>Yukarıdaki kutuya tarif metnini yapıştırıp yapay zekaya düzenletebilirsin!</div>';
     return;
   }
 
@@ -111,20 +131,21 @@ function render(){
     <div class="recipe-card">
       <div class="recipe-top">
         <div>
-          <span class="recipe-cat">Instagram Tarifi</span>
+          <span class="recipe-cat">${r.category || 'Tarif'}</span>
           <h2 class="recipe-title">${r.title}</h2>
         </div>
       </div>
       <div class="details-box">
-        <b>Ölçü & Notlar:</b>
+        <b>Malzemeler (Gram / Bardak Ölçülü):</b>
         <ul>
-          <li>Gram, su bardağı ve kaşık ölçülerine uyarlanmıştır.</li>
-          <li>Orijinal Instagram tarif videosu aşağıdadır.</li>
+          ${(r.ingredients || []).map(i => `<li>${i}</li>`).join('')}
         </ul>
+        <b>Hazırlanışı:</b>
+        <p style="margin:4px 0 0;">${r.instructions || 'Belirtilmemiş'}</p>
       </div>
       <div class="card-footer">
-        <a href="${r.url}" target="_blank" class="watch-btn">▶ Instagram'da Videoyu İzle</a>
-        <button class="delete-btn" onclick="removeRecipe(${index})">Sil</button>
+        ${r.url ? `<a href="${r.url}" target="_blank" class="watch-btn">▶ Instagram Kaynağı</a>` : '<span></span>'}
+        <button class="delete-btn" onclick="removeRecipe(${index})">Arşivden Sil</button>
       </div>
     </div>
   `).join('');
@@ -133,25 +154,70 @@ function render(){
 window.removeRecipe = function(index){
   if(confirm('Bu tarifi silmek istediğine emin misin?')){
     recipes.splice(index, 1);
-    save();
+    saveRecipes();
   }
 };
 
-$addBtn.onclick = () => {
-  let val = $input.value.trim();
-  if(!val || !val.includes('instagram.com')) {
-    alert('Lütfen geçerli bir Instagram linki girin!');
+$aiBtn.onclick = async () => {
+  const apiKey = localStorage.getItem('gemini_api_key');
+  if(!apiKey){
+    alert('Lütfen önce üstteki kutuya Google Gemini API anahtarınızı girip "Kaydet" butonuna basın!');
     return;
   }
 
-  const newRecipe = {
-    title: "Tarif #" + (recipes.length + 1),
-    url: val
-  };
+  const raw = $rawInput.value.trim();
+  const url = $urlInput.value.trim();
 
-  recipes.unshift(newRecipe);
-  $input.value = '';
-  save();
+  if(!raw){
+    alert('Lütfen düzenlenecek tarif metnini veya malzemeleri girin!');
+    return;
+  }
+
+  $aiBtn.textContent = 'Yapay Zeka Düzenliyor... Lütfen Bekleyin ⏳';
+  $aiBtn.disabled = true;
+
+  try {
+    const promptText = `Sen profesyonel bir şef ve mutfak asistanısın. Aşağıda ham olarak verilen tarif metnini veya malzemeleri incele. 
+    Onu Türkçeye çevir, tüm ölçüleri mutlaka **gram, su bardağı veya yemek/tatlı kaşığı** cinsine dönüştür. 
+    Bana MUTLAKA şu JSON formatında cevap ver ve başka hiçbir açıklama yazma:
+    {
+      "title": "Yemeğin veya Tatlının Adı",
+      "category": "Tatlılar / Ana Yemek / Fit Tarifler / Kahvaltılık bunlardan biri",
+      "ingredients": ["1 su bardağı un (120g)", "2 yemek kaşığı zeytinyağı vb."],
+      "instructions": "Kısa hazırlanış adımları..."
+    }
+    
+    Ham metin: ${raw}`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: promptText }] }]
+      })
+    });
+
+    const data = await response.json();
+    let textResponse = data.candidates[0].content.parts[0].text;
+    
+    // Markdown JSON bloklarını temizle
+    textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    const parsedRecipe = JSON.parse(textResponse);
+    parsedRecipe.url = url;
+
+    recipes.unshift(parsedRecipe);
+    $rawInput.value = '';
+    $urlInput.value = '';
+    saveRecipes();
+    alert('Tarif yapay zeka tarafından başarıyla düzenlendi ve arşive eklendi!');
+
+  } catch (err) {
+    alert('Yapay zeka işlenirken bir hata oluştu. API anahtarınızı veya metni kontrol edin.');
+  } finally {
+    $aiBtn.textContent = 'Yapay Zeka ile Düzenle ve Arşive Ekle';
+    $aiBtn.disabled = false;
+  }
 };
 
 render();
