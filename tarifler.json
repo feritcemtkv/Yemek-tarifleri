@@ -1,1 +1,18 @@
-
+[
+  {
+    "id": 1,
+    "title": "3 Malzemeli Unsuz Fit Kurabiye",
+    "category": "Fit Tarifler",
+    "ingredients": ["1 su bardağı yulaf ezmesi", "2 adet olgun muz", "2 yemek kaşığı kakao"],
+    "measureNote": "Gram ve bardak ölçülerine dönüştürüldü",
+    "embedUrl": "https://www.instagram.com/p/C_EXAMPLE/embed"
+  },
+  {
+    "id": 2,
+    "title": "Çıtır Patatesli Börek",
+    "category": "Ana Yemek",
+    "ingredients": ["3 adet yufka", "4 adet haşlanmış patates", "1 çay bardağı sıvı yağ"],
+    "measureNote": "Gram ve bardak ölçülerine dönüştürüldü",
+    "embedUrl": "https://www.instagram.com/p/C_EXAMPLE2/embed"
+  }
+]
