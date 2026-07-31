@@ -69,17 +69,18 @@
   .video-box iframe{width:100%; height:100%; border:none; position:absolute; top:0; left:0;}
 
   .empty{text-align:center; padding:40px; color:var(--text-soft);}
+  .loading{text-align:center; padding:40px; color:var(--text-soft);}
 </style>
 </head>
 <body>
 
 <header>
   <h1>🍳 Instagram Tarifler</h1>
-  <span id="count" style="font-size:13px; color:var(--text-soft);">0 tarif</span>
+  <span id="count" style="font-size:13px; color:var(--text-soft);">Yükleniyor...</span>
 </header>
 
 <div class="search-bar">
-  <input type="text" id="searchInput" placeholder="Malzeme veya yemek adı ara (örn: çikolata, patates)...">
+  <input type="text" id="searchInput" placeholder="Malzeme veya yemek adı ara...">
 </div>
 
 <div class="categories" id="catBar">
@@ -90,36 +91,28 @@
   <button class="cat-btn" data-cat="Kahvaltılık">Kahvaltılık</button>
 </div>
 
-<main id="recipeList"></main>
+<main id="recipeList">
+  <div class="loading">Tarifler yükleniyor...</div>
+</main>
 
 <script>
-// BURAYA TARİFLERİNİ EKLEYEBİLİRSİN (Toplu link ve verileri bu listede tutacaksın)
-const recipes = [
-  {
-    id: 1,
-    title: "3 Malzemeli Unsuz Fit Kurabiye",
-    category: "Fit Tarifler",
-    ingredients: ["1 su bardağı yulaf ezmesi", "2 adet olgun muz", "2 yemek kaşığı kakao"],
-    measureNote: "Ölçüler su bardağı ve yemek kaşığı olarak ayarlandı.",
-    // Instagram video/post linkinin sonundaki embed kodu veya kısa link mantığı
-    embedUrl: "https://www.instagram.com/p/C_EXAMPLE/embed" 
-  },
-  {
-    id: 2,
-    title: "Çıtır Patatesli Börek",
-    category: "Ana Yemek",
-    ingredients: ["3 adet yufka", "4 adet haşlanmış patates (yaklaşık 400g)", "1 çay bardağı sıvı yağ"],
-    measureNote: "Gram ve bardak ölçülerine dönüştürüldü.",
-    embedUrl: "https://www.instagram.com/p/C_EXAMPLE2/embed"
-  }
-];
-
+let recipes = [];
 let currentCat = "Tümü";
 let searchQuery = "";
 
 const $list = document.getElementById('recipeList');
 const $count = document.getElementById('count');
 const $searchInput = document.getElementById('searchInput');
+
+async function loadRecipes() {
+  try {
+    const response = await fetch('tarifler.json');
+    recipes = await response.json();
+    render();
+  } catch (err) {
+    $list.innerHTML = '<div class="empty">Tarifler yüklenirken bir hata oluştu.</div>';
+  }
+}
 
 function render(){
   const filtered = recipes.filter(r => {
@@ -152,7 +145,6 @@ function render(){
           </ul>
         </div>
         <div class="video-box">
-          <!-- Instagram video embed veya doğrudan bağlantı önizlemesi -->
           <iframe src="${r.embedUrl}" scrolling="no" allowtransparency="true"></iframe>
         </div>
       </div>
@@ -174,7 +166,7 @@ document.querySelectorAll('.cat-btn').forEach(btn=>{
   };
 });
 
-render();
+loadRecipes();
 </script>
 </body>
 </html>
