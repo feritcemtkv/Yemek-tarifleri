@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>Kolay Instagram Tariflerim</title>
+<title>Instagram Tarif Arşivim</title>
 <style>
   :root{
     --bg:#f8fafc;
     --card-bg:#ffffff;
-    --primary:#4f46e5;
-    --primary-soft:#eef2ff;
+    --primary:#e11d48;
+    --primary-soft:#ffe4e6;
     --text:#1e293b;
     --text-soft:#64748b;
     --line:#e2e8f0;
@@ -26,7 +26,7 @@
   }
   header h1{font-size:18px; font-weight:700; margin:0; color:var(--primary);}
   
-  main{padding:16px; max-width:600px; margin:0 auto 80px;}
+  main{padding:16px; max-width:6,00px; margin:0 auto 80px;}
 
   .add-box{
     background:#fff; border:1px solid var(--line); border-radius:var(--radius);
@@ -43,43 +43,42 @@
     background:var(--primary); color:#fff; border:none;
     padding:0 18px; border-radius:10px; font-weight:600; cursor:pointer; font-size:14px;
   }
-  .input-group button:active{transform:scale(0.96);}
 
   .recipe-card{
     background:var(--card-bg); border:1px solid var(--line);
     border-radius:var(--radius); margin-bottom:16px; overflow:hidden;
-    box-shadow:0 2px 8px rgba(0,0,0,.04);
+    box-shadow:0 2px 8px rgba(0,0,0,.04); padding:16px;
   }
-  .recipe-header{padding:14px 16px 10px; display:flex; justify-content:space-between; align-items:flex-start;}
+  .recipe-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;}
   .recipe-title{font-size:16px; font-weight:700; margin:0 0 4px;}
   .recipe-cat{font-size:11px; background:var(--primary-soft); color:var(--primary); padding:2px 8px; border-radius:999px; font-weight:700; text-transform:uppercase;}
   
-  .content-grid{display:grid; grid-template-columns:1fr 140px; gap:12px; padding:0 16px 14px;}
-  @media(max-width:480px){.content-grid{grid-template-columns:1fr;}}
-  
-  .details-box{font-size:13.5px; line-height:1.4;}
+  .details-box{font-size:13.5px; line-height:1.4; margin-bottom:12px;}
   .details-box b{font-size:11px; text-transform:uppercase; color:var(--text-soft); display:block; margin-bottom:4px;}
-  .details-box ul{margin:0 0 10px; padding-left:16px;}
+  .details-box ul{margin:0; padding-left:16px;}
   
-  .video-box{position:relative; width:100%; border-radius:10px; overflow:hidden; background:#000; min-height:180px;}
-  .video-box iframe{width:100%; height:100%; border:none; position:absolute; top:0; left:0;}
+  .card-footer{display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line); padding-top:12px; margin-top:12px;}
+  .watch-btn{
+    background:#0f172a; color:#fff; text-decoration:none; padding:8px 14px;
+    border-radius:8px; font-size:13px; font-weight:600; display:inline-block;
+  }
+  .delete-btn{background:none; border:none; color:#ef4444; font-size:13px; cursor:pointer; font-weight:600;}
 
   .empty{text-align:center; padding:40px; color:var(--text-soft);}
-  .delete-btn{background:none; border:none; color:#ef4444; font-size:12px; cursor:pointer; padding:0; margin-top:8px;}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🍳 Pratik Tarif Arşivim</h1>
+  <h1>📸 Instagram Tarif Arşivim</h1>
   <span id="count" style="font-size:13px; color:var(--text-soft);">0 tarif</span>
 </header>
 
 <main>
   <div class="add-box">
-    <h3>Instagram'dan Yeni Tarif Ekle</h3>
+    <h3>Yeni Tarif Ekle</h3>
     <div class="input-group">
-      <input type="text" id="instaLink" placeholder="Instagram gönderi linkini yapıştır (örn: instagram.com/p/...)">
+      <input type="text" id="instaLink" placeholder="Instagram linkini yapıştır (örn: https://www.instagram.com/p/...)">
       <button id="addBtn">Ekle</button>
     </div>
   </div>
@@ -88,8 +87,7 @@
 </main>
 
 <script>
-// Tarifler tarayıcının kendi hafızasında saklanır (hiç silinmez)
-let recipes = JSON.parse(localStorage.getItem('my_recipes') || '[]');
+let recipes = JSON.parse(localStorage.getItem('my_recipes_v2') || '[]');
 
 const $list = document.getElementById('recipeList');
 const $count = document.getElementById('count');
@@ -97,7 +95,7 @@ const $input = document.getElementById('instaLink');
 const $addBtn = document.getElementById('addBtn');
 
 function save(){
-  localStorage.setItem('my_recipes', JSON.stringify(recipes));
+  localStorage.setItem('my_recipes_v2', JSON.stringify(recipes));
   render();
 }
 
@@ -111,23 +109,22 @@ function render(){
 
   $list.innerHTML = recipes.map((r, index) => `
     <div class="recipe-card">
-      <div class="recipe-header">
+      <div class="recipe-top">
         <div>
-          <span class="recipe-cat">${r.category}</span>
+          <span class="recipe-cat">Instagram Tarifi</span>
           <h2 class="recipe-title">${r.title}</h2>
         </div>
-        <button class="delete-btn" onclick="removeRecipe(${index})">Sil</button>
       </div>
-      <div class="content-grid">
-        <div class="details-box">
-          <b>Malzemeler:</b>
-          <ul>
-            ${r.ingredients.map(i => `<li>${i}</li>`).join('')}
-          </ul>
-        </div>
-        <div class="video-box">
-          <iframe src="${r.embedUrl}" scrolling="no" allowtransparency="true"></iframe>
-        </div>
+      <div class="details-box">
+        <b>Ölçü & Notlar:</b>
+        <ul>
+          <li>Gram, su bardağı ve kaşık ölçülerine uyarlanmıştır.</li>
+          <li>Orijinal Instagram tarif videosu aşağıdadır.</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <a href="${r.url}" target="_blank" class="watch-btn">▶ Instagram'da Videoyu İzle</a>
+        <button class="delete-btn" onclick="removeRecipe(${index})">Sil</button>
       </div>
     </div>
   `).join('');
@@ -142,21 +139,14 @@ window.removeRecipe = function(index){
 
 $addBtn.onclick = () => {
   let val = $input.value.trim();
-  if(!val) return alert('Lütfen geçerli bir Instagram linki girin!');
-
-  // Linki embed formatına çevir
-  let embedUrl = val;
-  if(!embedUrl.includes('/embed')) {
-    if(embedUrl.endsWith('/')) embedUrl = embedUrl.slice(0, -1);
-    embedUrl = embedUrl + '/embed';
+  if(!val || !val.includes('instagram.com')) {
+    alert('Lütfen geçerli bir Instagram linki girin!');
+    return;
   }
 
-  // Örnek otomatik içerik türetici (İstediğin gibi sonradan değiştirebilirsin)
   const newRecipe = {
-    title: "Instagram Tarifim #" + (recipes.length + 1),
-    category: "Tatlı & Yemek",
-    ingredients: ["Tarif malzemeleri videodadır.", "Ölçüler gram / bardak uyarlıdır."],
-    embedUrl: embedUrl
+    title: "Tarif #" + (recipes.length + 1),
+    url: val
   };
 
   recipes.unshift(newRecipe);
