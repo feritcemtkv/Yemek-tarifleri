@@ -16,7 +16,8 @@ Uygulama `app/` klasöründe, sunucu dosyaları bu klasörde. Surface'taki LGS k
 ```
 ~/tarif-site/
   baslat.sh            cron her 5 dakikada ve açılışta çalıştırır
-  yedek-al.sh          her gece 23:20, ~/yedekler/tarif/<tarih>/ (30 gün, tarifler.json dahil)
+  yedek-al.sh          her gece 23:20, ~/yedekler/tarif/<tarih>/ (30 gün) + medya/ aynası
+  eski-tarifleri-aktar.py  eski arşivi fotoğraf ve videolarıyla aktarır
   kullanici-ekle.sh    uygulama hesabı oluşturur / şifre değiştirir
   pb/pocketbase
   pb/pb_public/        app/ klasörünün kopyası
@@ -66,7 +67,20 @@ altına kopyala. Servisi yeniden başlatmak gerekmez. Migration veya hook deği�
 
 ## Eski tarifleri aktarma
 
-Uygulamada Ayarlar → **Dosyadan tarif aktar** şu biçimdeki JSON listesini kabul eder.
+Eski arşiv (`tarif_projesi/tarifler/<Kategori>/<Tarif>/`) fotoğraf ve videolarıyla birlikte
+`eski-tarifleri-aktar.py` ile aktarılır. Arşivi Surface'a kopyala, sonra:
+
+```bash
+python3 ~/tarif-site/eski-tarifleri-aktar.py ~/tarif-aktarim/tarifler --deneme   # yalnızca listeler
+python3 ~/tarif-site/eski-tarifleri-aktar.py ~/tarif-aktarim/tarifler
+```
+
+Instagram kısa koduna göre aktarılmış tarifleri atlar; yarıda kalırsa tekrar çalıştırmak güvenlidir.
+
+Fotoğraf ve videolar `~/tarif-site/veri/storage/` altında durur. Gece yedeği bunları
+`~/yedekler/tarif/medya/` aynasına ekler.
+
+Uygulamada Ayarlar → **Dosyadan tarif aktar** ayrıca şu biçimdeki JSON listesini kabul eder.
 Aynı adlı tarifler atlanır.
 
 ```json

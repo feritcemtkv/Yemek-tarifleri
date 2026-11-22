@@ -45,11 +45,12 @@ class ApiError extends Error {
 
 async function api(path, { method = 'GET', body, auth = true } = {}) {
   const headers = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const isForm = body instanceof FormData;
+  if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
   if (auth && state.auth?.token) headers.Authorization = state.auth.token;
   let res;
   try {
-    res = await fetch(apiBase() + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+    res = await fetch(apiBase() + path, { method, headers, body: body === undefined ? undefined : (isForm ? body : JSON.stringify(body)) });
   } catch {
     throw new ApiError('Sunucuya ulaşılamadı.', 0);
   }
@@ -96,7 +97,16 @@ function toRecord(r) {
     instructions: r.instructions?.trim() || '',
     url: r.url?.trim() || '',
     favorite: !!r.favorite,
+    ...Object.fromEntries(TEXT_FIELDS.map((k) => [k, String(r[k] ?? '').trim()])),
   };
+}
+
+const TEXT_FIELDS = ['porsiyon', 'hazirlik', 'pisirme', 'notlar', 'thermomix', 'yazar'];
+
+function fileUrl(r, field, thumb) {
+  if (!r?.[field]) return '';
+  return `${apiBase()}/api/files/${encodeURIComponent(r.collectionId)}/${encodeURIComponent(r.id)}/${encodeURIComponent(r[field])}`
+    + (thumb ? `?thumb=${thumb}` : '');
 }
 
 async function fetchAll() {
@@ -135,7 +145,7 @@ const VIEWS = ['login', 'list', 'detail', 'edit', 'settings'];
 
 function go(view, { push = true } = {}) {
   for (const v of VIEWS) $('view-' + v).hidden = v !== view;
-  if (view !== 'detail') releaseWake();
+  if (view !== 'detail') { releaseWake(); document.querySelectorAll('#detail video').forEach((v) => v.pause()); }
   if (push && location.hash !== '#' + view) history.pushState({ view }, '', '#' + view);
   window.scrollTo(0, 0);
 }
@@ -179,7 +189,7 @@ function matches(r) {
   if (category === 'Favoriler' && !r.favorite) return false;
   if (category !== 'Tümü' && category !== 'Favoriler' && r.category !== category) return false;
   if (!q) return true;
-  const hay = trLower([r.title, r.category, ...(r.ingredients || [])].join(' '));
+  const hay = trLower([r.title, r.category, r.notlar, ...(r.ingredients || [])].join(' '));
   return trLower(q).split(/\s+/).every((w) => hay.includes(w));
 }
 
@@ -187,11 +197,14 @@ function renderList() {
   renderChips();
   const list = state.recipes.filter(matches);
   $('cards').innerHTML = list.map((r) => `
-    <li><button class="card" data-id="${esc(r.id)}">
+    <li><button class="card${r.kapak ? ' has-img' : ''}" data-id="${esc(r.id)}">
+      ${r.kapak ? `<img class="card-img" src="${esc(fileUrl(r, 'kapak', '400x400f'))}" alt="" loading="lazy">` : ''}
+      <div class="card-body">
       ${r.category ? `<div class="card-cat">${esc(r.category)}${r.favorite ? ' <span class="card-fav" aria-label="favori">♥</span>' : ''}</div>`
                    : (r.favorite ? '<div class="card-cat card-fav">♥</div>' : '')}
       <div class="card-title">${esc(r.title)}</div>
       ${(r.ingredients || []).length ? `<div class="card-sub">${esc(r.ingredients.join(' · '))}</div>` : ''}
+      </div>
     </button></li>`).join('');
 
   const empty = $('empty');
@@ -237,9 +250,16 @@ function openDetail(id, { push = true } = {}) {
 
 function renderDetail(r) {
   const steps = splitSteps(r.instructions);
+  const kapak = fileUrl(r, 'kapak');
+  const media = r.video
+    ? `<div class="detail-media"><video controls playsinline preload="none" src="${esc(fileUrl(r, 'video'))}"${kapak ? ` poster="${esc(kapak)}"` : ''}></video></div>`
+    : (kapak ? `<div class="detail-media"><img src="${esc(kapak)}" alt=""></div>` : '');
+  const meta = [['Porsiyon', r.porsiyon], ['Hazırlık', r.hazirlik], ['Pişirme', r.pisirme]].filter(([, v]) => v);
   $('detail').innerHTML = `
+    ${media}
     ${r.category ? `<div class="card-cat">${esc(r.category)}</div>` : ''}
     <h1>${esc(r.title)}</h1>
+    ${meta.length ? `<div class="meta">${meta.map(([k, v]) => `<span>${k === 'Porsiyon' ? `<span class="sr-only">${k}: </span>` : `<span class="muted">${k} </span>`}${esc(v)}</span>`).join('')}</div>` : ''}
     ${(r.ingredients || []).length ? `
       <h2>Malzemeler</h2>
       <ul class="ing-list">${r.ingredients.map((i, n) =>
@@ -247,7 +267,12 @@ function renderDetail(r) {
     ${steps.length ? `
       <h2>Hazırlanışı</h2>
       <ol class="step-list">${steps.map((s) => `<li><span>${esc(s)}</span></li>`).join('')}</ol>` : ''}
+    ${r.thermomix ? `
+      <h2>Thermomix</h2>
+      <ol class="step-list">${splitSteps(r.thermomix).map((s) => `<li><span>${esc(s)}</span></li>`).join('')}</ol>` : ''}
+    ${r.notlar ? `<h2>Notlar</h2><p class="note">${esc(r.notlar)}</p>` : ''}
     ${safeUrl(r.url) ? `<a class="source-link" href="${esc(safeUrl(r.url))}" target="_blank" rel="noopener">Kaynağı aç ↗</a>` : ''}
+    ${r.yazar ? `<div class="source-meta">@${esc(r.yazar.replace(/^@/, ''))}</div>` : ''}
     ${'wakeLock' in navigator ? `<label class="wake"><input type="checkbox" id="wake-toggle"> Pişirirken ekran kapanmasın</label>` : ''}
   `;
   $('wake-toggle')?.addEventListener('change', (e) => (e.target.checked ? holdWake() : releaseWake()));
@@ -315,7 +340,21 @@ function fillForm(r) {
   $('f-ingredients').value = (r.ingredients || []).join('\n');
   $('f-instructions').value = r.instructions || '';
   $('f-url').value = r.url || '';
+  for (const k of ['porsiyon', 'hazirlik', 'pisirme', 'notlar', 'thermomix']) $('f-' + k).value = r[k] || '';
+  $('f-kapak').value = '';
+  const onizleme = $('f-kapak-onizleme');
+  const url = r.id ? fileUrl(r, 'kapak', '400x400f') : '';
+  onizleme.hidden = !url;
+  if (url) onizleme.src = url; else onizleme.removeAttribute('src');
 }
+
+$('f-kapak').addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  const onizleme = $('f-kapak-onizleme');
+  if (!f) return;
+  onizleme.src = URL.createObjectURL(f);
+  onizleme.hidden = false;
+});
 
 function readForm() {
   return toRecord({
@@ -325,7 +364,18 @@ function readForm() {
     instructions: $('f-instructions').value,
     url: $('f-url').value,
     favorite: state.editing?.favorite,
+    yazar: state.editing?.yazar,
+    ...Object.fromEntries(['porsiyon', 'hazirlik', 'pisirme', 'notlar', 'thermomix'].map((k) => [k, $('f-' + k).value])),
   });
+}
+
+function toBody(data) {
+  const file = $('f-kapak').files[0];
+  if (!file) return data;
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(data)) fd.append(k, typeof v === 'string' ? v : JSON.stringify(v));
+  fd.append('kapak', file);
+  return fd;
 }
 
 $('btn-add').addEventListener('click', () => openEdit(null));
@@ -342,8 +392,8 @@ $('edit-form').addEventListener('submit', async (e) => {
   $('edit-error').hidden = true;
   try {
     const rec = state.editing
-      ? await api(`/api/collections/${COLLECTION}/records/${state.editing.id}`, { method: 'PATCH', body: data })
-      : await api(`/api/collections/${COLLECTION}/records`, { method: 'POST', body: data });
+      ? await api(`/api/collections/${COLLECTION}/records/${state.editing.id}`, { method: 'PATCH', body: toBody(data) })
+      : await api(`/api/collections/${COLLECTION}/records`, { method: 'POST', body: toBody(data) });
     upsertLocal(rec);
     state.current = rec;
     toast('Tarif kaydedildi.');
@@ -394,7 +444,9 @@ $('btn-ai').addEventListener('click', async () => {
   try {
     const r = await aiFormat(raw, key, store.get('gemini_model', DEFAULT_MODEL));
     const url = (raw.match(/https?:\/\/\S+/) || [''])[0];
+    const kapakSecimi = $('f-kapak').files[0];
     fillForm({ ...r, url: $('f-url').value || url });
+    if (kapakSecimi) { const dt = new DataTransfer(); dt.items.add(kapakSecimi); $('f-kapak').files = dt.files; $('f-kapak').dispatchEvent(new Event('change')); }
     toast('Tarif düzenlendi. Kontrol edip kaydet.');
     $('f-title').scrollIntoView({ behavior: 'smooth', block: 'center' });
   } catch (err) {

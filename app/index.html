@@ -110,6 +110,20 @@
       <textarea id="f-ingredients" rows="7"></textarea>
       <label for="f-instructions">Hazırlanışı <span class="muted">(her adım ayrı satırda)</span></label>
       <textarea id="f-instructions" rows="8"></textarea>
+      <div class="row3">
+        <div><label for="f-porsiyon">Porsiyon</label><input id="f-porsiyon" placeholder="4 kişilik"></div>
+        <div><label for="f-hazirlik">Hazırlık</label><input id="f-hazirlik" placeholder="15 dk"></div>
+        <div><label for="f-pisirme">Pişirme</label><input id="f-pisirme" placeholder="30 dk"></div>
+      </div>
+      <label for="f-notlar">Notlar <span class="muted">(isteğe bağlı)</span></label>
+      <textarea id="f-notlar" rows="3"></textarea>
+      <label for="f-thermomix">Thermomix adımları <span class="muted">(isteğe bağlı)</span></label>
+      <textarea id="f-thermomix" rows="3"></textarea>
+      <label for="f-kapak">Kapak fotoğrafı <span class="muted">(isteğe bağlı)</span></label>
+      <div class="kapak-sec">
+        <img id="f-kapak-onizleme" alt="" hidden>
+        <input id="f-kapak" type="file" accept="image/*">
+      </div>
       <label for="f-url">Kaynak bağlantısı <span class="muted">(isteğe bağlı)</span></label>
       <input id="f-url" type="url" inputmode="url" autocapitalize="off" placeholder="https://www.instagram.com/p/…">
       <p id="edit-error" class="error" role="alert" hidden></p>
