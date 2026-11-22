@@ -38,6 +38,7 @@ VERI = SITE / "veri"
 ISCI = SITE / "isci"
 SUNUCU = "http://127.0.0.1:8095"
 CEREZ = ISCI / "instagram-cerezler.txt"   # isteğe bağlı: giriş isteyen gönderiler için
+HESAP = "isci@yerel.test"     # bu betiğe ait yerel yönetici hesabı (diğer betiklerle çakışmasın)
 CLAUDE = shutil.which("claude") or str(EV / ".local" / "bin" / "claude")
 WHISPER_MODEL = os.environ.get("TARIF_WHISPER", "small")
 CLAUDE_SURE = 900          # saniye
@@ -63,10 +64,10 @@ class Sunucu:
 
     def giris(self):
         sifre = secrets.token_urlsafe(24)
-        subprocess.run([str(PB), "superuser", "upsert", "betik@yerel.test", sifre, f"--dir={VERI}"],
+        subprocess.run([str(PB), "superuser", "upsert", HESAP, sifre, f"--dir={VERI}"],
                        check=True, capture_output=True)
         self.token = self._istek("POST", "/api/collections/_superusers/auth-with-password",
-                                 json.dumps({"identity": "betik@yerel.test", "password": sifre}).encode(),
+                                 json.dumps({"identity": HESAP, "password": sifre}).encode(),
                                  "application/json", yetki=False)["token"]
 
     def _istek(self, yontem, yol, govde=None, tur=None, yetki=True):
@@ -86,7 +87,7 @@ class Sunucu:
         try:
             return self._istek(yontem, yol, govde, tur)
         except urllib.error.HTTPError as e:
-            if e.code in (401, 403):        # başka bir betik yönetici şifresini yenilemiş olabilir
+            if e.code in (401, 403, 404):   # oturum düşmüş olabilir (geçersiz belirteçle PocketBase 404 döner)
                 self.giris()
                 return self._istek(yontem, yol, govde, tur)
             raise

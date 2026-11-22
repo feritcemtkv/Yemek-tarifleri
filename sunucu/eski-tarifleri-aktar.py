@@ -28,10 +28,10 @@ ATLA = {'Mobil'}  # liste sayfaları, tarif değil
 def yonetici_belirteci():
     """Yerel yönetici hesabının şifresini rastgele yeniler ve belirteç alır."""
     sifre = secrets.token_urlsafe(24)
-    subprocess.run([PB, 'superuser', 'upsert', 'betik@yerel.test', sifre, f'--dir={VERI}'],
+    subprocess.run([PB, 'superuser', 'upsert', 'aktar@yerel.test', sifre, f'--dir={VERI}'],
                    check=True, capture_output=True)
     return istek('/api/collections/_superusers/auth-with-password',
-                 json.dumps({'identity': 'betik@yerel.test', 'password': sifre}).encode(),
+                 json.dumps({'identity': 'aktar@yerel.test', 'password': sifre}).encode(),
                  {'Content-Type': 'application/json'})['token']
 
 
