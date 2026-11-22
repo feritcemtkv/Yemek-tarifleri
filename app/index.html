@@ -56,6 +56,7 @@
   </div>
   <nav class="chips" id="chips" aria-label="Kategoriler"></nav>
   <p class="status" id="status" hidden></p>
+  <ul class="jobs" id="jobs" aria-label="Hazırlanan tarifler" aria-live="polite"></ul>
   <ul class="cards" id="cards"></ul>
   <div class="empty" id="empty" hidden></div>
   <button class="fab" id="btn-add" aria-label="Yeni tarif ekle">
@@ -92,13 +93,19 @@
     <span class="topbar-spacer"></span>
   </header>
   <div class="form-page">
-    <div class="ai-box" id="ai-box">
-      <label for="ai-raw">Tarif metnini yapıştır</label>
-      <textarea id="ai-raw" rows="5" placeholder="Instagram açıklaması, yabancı tarif, malzeme listesi…"></textarea>
-      <button class="btn secondary block" id="btn-ai">Yapay zekayla düzenle</button>
-      <p class="hint">Türkçeye çevirir, ölçüleri gram ve bardağa dönüştürür. Sonucu kaydetmeden önce aşağıda kontrol edebilirsin.</p>
-      <p id="ai-error" class="error" role="alert" hidden></p>
-    </div>
+    <form class="ai-box" id="ai-box" novalidate>
+      <label for="ig-url">Instagram bağlantısı</label>
+      <input id="ig-url" type="url" inputmode="url" autocapitalize="off" autocomplete="off" placeholder="https://www.instagram.com/reel/…">
+      <details class="ig-metin">
+        <summary>Bağlantı yerine tarif metni yapıştır</summary>
+        <label for="ig-metin" class="sr-only">Tarif metni</label>
+        <textarea id="ig-metin" rows="5" placeholder="Yabancı bir tarif, malzeme listesi…"></textarea>
+      </details>
+      <button type="submit" class="btn primary block" id="btn-ig">Claude'a izlet ve tarifi çıkar</button>
+      <p class="hint">Surface videoyu indirir. Açıklamada tarif varsa Türkçeye çevrilir, yoksa Claude videoyu izleyip tarifi çıkarır. Birkaç dakika sürebilir; bu sırada uygulamayı kapatabilirsin.</p>
+      <p id="ig-error" class="error" role="alert" hidden></p>
+    </form>
+    <h2 class="group-title" id="elle-baslik">Ya da elle yaz</h2>
     <form id="edit-form" novalidate>
       <label for="f-title">Tarif adı</label>
       <input id="f-title" required>
@@ -143,15 +150,6 @@
     <span class="topbar-spacer"></span>
   </header>
   <div class="form-page">
-    <h2 class="group-title">Yapay zeka</h2>
-    <div class="group">
-      <label for="s-key">Gemini API anahtarı</label>
-      <input id="s-key" type="password" autocomplete="off" autocapitalize="off" placeholder="AIza…">
-      <p class="hint">Anahtar yalnızca bu cihazda saklanır.</p>
-      <label for="s-model">Model</label>
-      <input id="s-model" autocapitalize="off" spellcheck="false">
-      <button class="btn secondary block" id="btn-save-ai">Kaydet</button>
-    </div>
     <h2 class="group-title">Yedek</h2>
     <div class="group">
       <button class="btn secondary block" id="btn-export">Tüm tarifleri indir (JSON)</button>

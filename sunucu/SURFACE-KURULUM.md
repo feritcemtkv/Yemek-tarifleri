@@ -19,6 +19,12 @@ Uygulama `app/` klasöründe, sunucu dosyaları bu klasörde. Surface'taki LGS k
   yedek-al.sh          her gece 23:20, ~/yedekler/tarif/<tarih>/ (30 gün) + medya/ aynası
   eski-tarifleri-aktar.py  eski arşivi fotoğraf ve videolarıyla aktarır
   kullanici-ekle.sh    uygulama hesabı oluşturur / şifre değiştirir
+  isci/                Instagram'dan tarif çıkaran işçi (sunucu/isci/)
+    tarif-isci.py      yt-dlp ile indirir, Whisper ile konuşmayı yazar, Claude Code ile tarifi çıkarır
+    isci-baslat.sh     cron her 5 dakikada ve açılışta çalıştırır
+    .venv/             uv ile kurulan Python 3.12 (yt-dlp, faster-whisper, imageio-ffmpeg)
+    modeller/          Whisper "small" modeli (ilk çalıştırmada iner)
+    isci.log
   pb/pocketbase
   pb/pb_public/        app/ klasörünün kopyası
   pb/pb_migrations/
@@ -33,7 +39,33 @@ Crontab satırları:
 @reboot $HOME/tarif-site/baslat.sh
 */5 * * * * $HOME/tarif-site/baslat.sh
 20 23 * * * $HOME/tarif-site/yedek-al.sh >> $HOME/yedek/tarif.log 2>&1
+@reboot $HOME/tarif-site/isci/isci-baslat.sh
+*/5 * * * * $HOME/tarif-site/isci/isci-baslat.sh
 ```
+
+## Instagram'dan tarif çıkarma
+
+Uygulamada "Tarif ekle" → Instagram bağlantısı. İstek `istekler` koleksiyonuna düşer; işçi:
+
+1. Videoyu, kapağı ve açıklamayı **yt-dlp** ile indirir (girişsiz).
+2. Konuşmayı **faster-whisper** ile Surface'ta yazıya döker.
+3. Videodan en fazla 30 kare çıkarır.
+4. Surface'ta giriş yapılmış **Claude Code**'u (`claude -p`, yalnızca Read aracıyla) çalıştırır:
+   açıklamada tarif varsa Türkçeye çevirir, yoksa konuşmayı okuyup kareleri izleyerek tarifi çıkarır.
+   Kullanım, Surface'taki Claude hesabının kotasından düşer; API anahtarı gerekmez.
+5. Tarifi videosu ve kapağıyla kaydeder.
+
+Kurulum (sudo gerekmez):
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh
+cd ~/tarif-site/isci && uv venv --python 3.12 .venv
+uv pip install --python .venv/bin/python yt-dlp faster-whisper imageio-ffmpeg
+```
+
+Instagram bir gönderi için giriş isterse, tarayıcıdan dışa aktarılmış çerez dosyası
+`~/tarif-site/isci/instagram-cerezler.txt` olarak konabilir; işçi varsa kullanır.
+Claude oturumu kapanırsa Surface'ta bir kez `claude` çalıştırıp giriş yapmak gerekir.
 
 ## Kullanıcının yapacakları
 

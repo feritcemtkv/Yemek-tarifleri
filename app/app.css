@@ -190,3 +190,22 @@ dialog p { margin: 0 0 16px; }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .btn:active, .fab:active { transform: none; } }
+
+/* Hazırlanan tarifler */
+.jobs { list-style: none; margin: 0 16px; padding: 0; display: grid; gap: 8px; }
+.jobs:not(:empty) { margin-bottom: 10px; }
+.job { display: flex; gap: 12px; align-items: flex-start; background: var(--accent-soft); border-radius: var(--radius); padding: 12px 14px; }
+.job.err { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); }
+.job-body { min-width: 0; flex: 1; }
+.job-title { font-weight: 600; overflow-wrap: anywhere; }
+.job-sub { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.job-actions { display: flex; gap: 8px; margin-top: 8px; }
+.job-icon { width: 24px; height: 24px; flex: none; border-radius: 999px; display: grid; place-items: center; font-weight: 700; font-size: 14px; background: var(--accent); color: var(--accent-ink); }
+.job.err .job-icon { background: var(--danger); color: #fff; }
+.btn.sm { min-height: 36px; padding: 0 14px; font-size: 14px; }
+.spinner { width: 22px; height: 22px; flex: none; margin-top: 1px; border-radius: 999px; border: 3px solid color-mix(in srgb, var(--accent) 25%, transparent); border-top-color: var(--accent); animation: don 0.9s linear infinite; }
+@keyframes don { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+.ig-metin { margin-top: 10px; font-size: 14px; }
+.ig-metin summary { cursor: pointer; color: var(--muted); padding: 4px 0; }
+.ig-metin textarea { margin-top: 8px; }

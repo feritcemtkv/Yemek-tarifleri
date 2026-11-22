@@ -5,8 +5,7 @@
    saklanır, böylece bağlantı yokken de tarifler açılır. */
 
 const COLLECTION = 'tarifler';
-const DEFAULT_MODEL = 'gemini-flash-latest';
-const DEFAULT_CATEGORIES = ['Ana Yemek', 'Çorbalar', 'Tatlılar', 'Hamur İşi', 'Kahvaltılık', 'Salatalar', 'Fit Tarifler', 'Atıştırmalık', 'İçecekler'];
+const DEFAULT_CATEGORIES = ['Ana Yemek', 'Çorba', 'Tatlı', 'Hamur İşi', 'Kahvaltılık', 'Salata', 'Meze', 'Makarna', 'Et Yemeği', 'Tavuk Yemeği', 'Deniz Ürünleri', 'Atıştırmalık', 'Sos', 'İçecek'];
 
 const store = {
   get(key, fallback = null) {
@@ -19,6 +18,7 @@ const store = {
 };
 
 const state = {
+  jobs: [],
   server: store.get('server', ''),
   auth: store.get('auth', null),          // { token, email }
   recipes: store.get('recipes_cache', []),
@@ -207,12 +207,13 @@ function renderList() {
       </div>
     </button></li>`).join('');
 
+  renderJobs();
   const empty = $('empty');
   if (list.length) { empty.hidden = true; return; }
   empty.hidden = false;
   empty.innerHTML = state.recipes.length
     ? `<strong>Eşleşen tarif yok</strong>Aramayı veya kategoriyi değiştir.`
-    : `<strong>Henüz tarif yok</strong>“Tarif ekle” ile ilk tarifini ekle ya da Ayarlar'dan eski arşivi aktar.`;
+    : `<strong>Henüz tarif yok</strong>“Tarif ekle” ile bir Instagram bağlantısı yapıştır; Claude videoyu izleyip tarifi çıkarsın.`;
 }
 
 $('cards').addEventListener('click', (e) => {
@@ -323,12 +324,13 @@ function openEdit(r) {
   state.editing = r || null;
   $('edit-title').textContent = r ? 'Tarifi düzenle' : 'Yeni tarif';
   $('ai-box').hidden = !!r;
+  $('elle-baslik').hidden = !!r;
+  $('ai-box').querySelector('details').open = false;
   $('btn-delete').hidden = !r;
-  $('ai-raw').value = '';
   fillForm(r || {});
   $('f-title-error').hidden = true;
   $('edit-error').hidden = true;
-  $('ai-error').hidden = true;
+  $('ig-error').hidden = true;
   $('category-list').innerHTML = [...new Set([...DEFAULT_CATEGORIES, ...categories()])]
     .map((c) => `<option value="${esc(c)}">`).join('');
   go('edit');
@@ -430,88 +432,111 @@ $('btn-delete').addEventListener('click', async () => {
   }
 });
 
-/* ---------- Yapay zeka ---------- */
+/* ---------- Instagram'dan ekle (Surface'taki Claude) ---------- */
 
-$('btn-ai').addEventListener('click', async () => {
-  const raw = $('ai-raw').value.trim();
-  $('ai-error').hidden = true;
-  if (!raw) { showError('ai-error', 'Önce düzenlenecek tarif metnini yapıştır.'); return; }
-  const key = store.get('gemini_key', '');
-  if (!key) { showError('ai-error', 'Gemini API anahtarı yok. Ayarlar\'dan ekleyebilir ya da formu elle doldurabilirsin.'); return; }
+const ISTEK = 'istekler';
+let jobTimer = null;
 
-  const btn = $('btn-ai');
-  btn.disabled = true; btn.textContent = 'Düzenleniyor…';
+$('ai-box').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const url = $('ig-url').value.trim();
+  const metin = $('ig-metin').value.trim();
+  $('ig-error').hidden = true;
+  if (!url && !metin) { showError('ig-error', 'Instagram bağlantısını yapıştır ya da tarif metnini yaz.'); return; }
+  if (url && !/^https?:\/\/\S+$/i.test(url)) { showError('ig-error', 'Bağlantı "https://" ile başlamalı.'); return; }
+  const btn = $('btn-ig');
+  btn.disabled = true; btn.textContent = 'Gönderiliyor…';
   try {
-    const r = await aiFormat(raw, key, store.get('gemini_model', DEFAULT_MODEL));
-    const url = (raw.match(/https?:\/\/\S+/) || [''])[0];
-    const kapakSecimi = $('f-kapak').files[0];
-    fillForm({ ...r, url: $('f-url').value || url });
-    if (kapakSecimi) { const dt = new DataTransfer(); dt.items.add(kapakSecimi); $('f-kapak').files = dt.files; $('f-kapak').dispatchEvent(new Event('change')); }
-    toast('Tarif düzenlendi. Kontrol edip kaydet.');
-    $('f-title').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const job = await api(`/api/collections/${ISTEK}/records`, { method: 'POST', body: { url, metin, durum: 'bekliyor' } });
+    state.jobs = [job, ...(state.jobs || []).filter((j) => j.id !== job.id)];
+    $('ig-url').value = ''; $('ig-metin').value = '';
+    toast('Gönderildi. Tarif hazır olunca listede görünecek.');
+    history.back();
+    renderJobs();
+    pollJobs();
   } catch (err) {
-    showError('ai-error', err.message);
+    showError('ig-error', err.status === 0 ? 'Sunucuya ulaşılamadı. Bağlantını kontrol edip tekrar dene.' : 'Gönderilemedi: ' + err.message);
   } finally {
-    btn.disabled = false; btn.textContent = 'Yapay zekayla düzenle';
+    btn.disabled = false; btn.textContent = "Claude'a izlet ve tarifi çıkar";
   }
 });
 
-async function aiFormat(raw, key, model) {
-  const prompt = `Sen deneyimli bir şef ve mutfak asistanısın. Aşağıdaki ham tarif metnini düzenle:
-- Türkçeye çevir.
-- Tüm ölçüleri gram, mililitre, su bardağı, çay bardağı, yemek kaşığı veya tatlı kaşığına dönüştür (ör. "1 su bardağı un (120 g)").
-- Kategori şu listeden biri olsun: ${DEFAULT_CATEGORIES.join(', ')}.
-- Hazırlanışı kısa adımlar halinde, her adım ayrı satırda yaz (numara koyma).
-Yalnızca şu JSON nesnesini döndür:
-{"title": "...", "category": "...", "ingredients": ["..."], "instructions": "adım 1\\nadım 2"}
+async function fetchJobs() {
+  const since = new Date(Date.now() - 3 * 86400e3).toISOString().replace('T', ' ');
+  const filter = encodeURIComponent(`durum != "bitti" || updated >= "${since}"`);
+  const data = await api(`/api/collections/${ISTEK}/records?filter=${filter}&sort=-created&perPage=30&skipTotal=1`);
+  return data.items;
+}
 
-Ham metin:
-${raw}`;
+const ACTIVE = (j) => j.durum === 'bekliyor' || j.durum === 'isleniyor';
+const seen = new Set(store.get('jobs_seen', []));
 
-  let res;
+function renderJobs() {
+  const jobs = (state.jobs || []).filter((j) => ACTIVE(j) || j.durum === 'hata' || (j.durum === 'bitti' && !seen.has(j.id)));
+  $('jobs').innerHTML = jobs.map((j) => {
+    const etiket = j.url ? j.url.replace(/^https?:\/\/(www\.)?/, '').slice(0, 48) : 'Yapıştırılan metin';
+    if (ACTIVE(j)) return `<li class="job"><span class="spinner" aria-hidden="true"></span>
+      <div class="job-body"><div class="job-title">${esc(j.durum === 'bekliyor' ? 'Sırada' : (j.adim || 'Hazırlanıyor'))}…</div>
+      <div class="job-sub">${esc(etiket)}</div></div></li>`;
+    if (j.durum === 'hata') return `<li class="job err"><span class="job-icon" aria-hidden="true">!</span>
+      <div class="job-body"><div class="job-title">Tarif çıkarılamadı</div><div class="job-sub">${esc(j.mesaj || '')}</div>
+      <div class="job-actions"><button class="btn secondary sm" data-retry="${esc(j.id)}">Tekrar dene</button>
+      <button class="btn danger-text sm" data-remove="${esc(j.id)}">Kaldır</button></div></div></li>`;
+    const r = state.recipes.find((x) => x.id === j.tarif);
+    return `<li class="job ok"><span class="job-icon" aria-hidden="true">✓</span>
+      <div class="job-body"><div class="job-title">${esc(r ? r.title : 'Tarif hazır')}</div><div class="job-sub">${esc(j.mesaj || '')}</div>
+      <div class="job-actions">${j.tarif ? `<button class="btn secondary sm" data-open="${esc(j.tarif)}" data-job="${esc(j.id)}">Aç</button>` : ''}
+      <button class="btn danger-text sm" data-dismiss="${esc(j.id)}">Kapat</button></div></div></li>`;
+  }).join('');
+}
+
+function markSeen(id) {
+  seen.add(id);
+  store.set('jobs_seen', [...seen].slice(-200));
+}
+
+$('jobs').addEventListener('click', async (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
   try {
-    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json', temperature: 0.3 },
-      }),
-    });
-  } catch {
-    throw new Error('Yapay zekaya ulaşılamadı. İnternet bağlantını kontrol et.');
+    if (b.dataset.retry) {
+      await api(`/api/collections/${ISTEK}/records/${b.dataset.retry}`, { method: 'PATCH', body: { durum: 'bekliyor', mesaj: '', adim: '' } });
+      pollJobs();
+    } else if (b.dataset.remove) {
+      await api(`/api/collections/${ISTEK}/records/${b.dataset.remove}`, { method: 'DELETE' });
+      state.jobs = state.jobs.filter((j) => j.id !== b.dataset.remove);
+    } else if (b.dataset.dismiss) {
+      markSeen(b.dataset.dismiss);
+    } else if (b.dataset.open) {
+      markSeen(b.dataset.job);
+      if (!state.recipes.some((r) => r.id === b.dataset.open)) await sync({ quiet: true });
+      openDetail(b.dataset.open);
+    }
+  } catch (err) {
+    toast(err.status === 0 ? 'Sunucuya ulaşılamadı.' : err.message);
   }
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const msg = data?.error?.message || '';
-    if (res.status === 400 && /api key/i.test(msg)) throw new Error('Gemini API anahtarı geçersiz. Ayarlar\'dan kontrol et.');
-    if (res.status === 404) throw new Error(`"${model}" modeli bulunamadı. Ayarlar'dan model adını değiştir.`);
-    if (res.status === 429) throw new Error('Gemini kullanım sınırı doldu. Biraz sonra tekrar dene.');
-    throw new Error('Yapay zeka hatası: ' + (msg || res.status));
-  }
-  const text = (data?.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('');
+  renderJobs();
+});
+
+async function pollJobs() {
+  clearTimeout(jobTimer);
+  if (!state.auth) return;
   try {
-    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-    return toRecord(parsed);
-  } catch {
-    throw new Error('Yapay zekanın cevabı okunamadı. Tekrar dene ya da formu elle doldur.');
-  }
+    const before = new Map((state.jobs || []).map((j) => [j.id, j.durum]));
+    state.jobs = await fetchJobs();
+    const finished = state.jobs.filter((j) => j.durum === 'bitti' && before.get(j.id) && before.get(j.id) !== 'bitti');
+    if (finished.length) { await sync({ quiet: true }); toast(finished.length > 1 ? `${finished.length} tarif hazır.` : 'Tarif hazır.'); }
+    renderJobs();
+  } catch { /* çevrimdışı */ }
+  if ((state.jobs || []).some(ACTIVE) && document.visibilityState === 'visible') jobTimer = setTimeout(pollJobs, 4000);
 }
 
 /* ---------- Ayarlar, yedek ---------- */
 
 $('btn-settings').addEventListener('click', () => {
-  $('s-key').value = store.get('gemini_key', '');
-  $('s-model').value = store.get('gemini_model', DEFAULT_MODEL);
   $('s-account').textContent = `${state.auth?.email || ''} · ${apiBase()}`;
   $('import-status').textContent = '';
   go('settings');
-});
-
-$('btn-save-ai').addEventListener('click', () => {
-  store.set('gemini_key', $('s-key').value.trim());
-  store.set('gemini_model', $('s-model').value.trim() || DEFAULT_MODEL);
-  toast('Yapay zeka ayarları kaydedildi.');
 });
 
 $('btn-export').addEventListener('click', () => {
@@ -575,6 +600,7 @@ $('login-form').addEventListener('submit', async (e) => {
     go('list', { push: false });
     renderList();
     sync();
+    pollJobs();
   } catch (err) {
     showError('login-error', err.status === 400
       ? 'E-posta veya şifre yanlış.'
@@ -614,12 +640,12 @@ if (state.auth) {
   history.replaceState({ view: 'list' }, '', '#list');
   go('list', { push: false });
   renderList();
-  refreshAuth().then(() => sync({ quiet: state.recipes.length > 0 }));
+  refreshAuth().then(() => { sync({ quiet: state.recipes.length > 0 }); pollJobs(); });
 } else {
   history.replaceState({ view: 'login' }, '', '#login');
   go('login', { push: false });
 }
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && state.auth && !$('view-list').hidden) sync({ quiet: true });
+  if (document.visibilityState === 'visible' && state.auth) { pollJobs(); if (!$('view-list').hidden) sync({ quiet: true }); }
 });
