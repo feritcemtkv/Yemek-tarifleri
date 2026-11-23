@@ -170,9 +170,19 @@ document.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('clic
 
 /* ---------- Liste ---------- */
 
+// Kategoriler bu sırayla gösterilir; listede olmayanlar ardından alfabetik gelir.
+const KATEGORI_SIRASI = ['Et Yemeği', 'Tavuk Yemeği', 'Deniz Ürünleri', 'Makarna'];
+function kategoriSirasi(c) {
+  const i = KATEGORI_SIRASI.indexOf(c);
+  return i >= 0 ? i : c ? KATEGORI_SIRASI.length : KATEGORI_SIRASI.length + 1;   // kategorisizler en sonda
+}
+function kategoriKarsilastir(a, b) {
+  return kategoriSirasi(a) - kategoriSirasi(b) || String(a).localeCompare(String(b), 'tr');
+}
+
 function categories() {
   const used = new Set(state.recipes.map((r) => r.category).filter(Boolean));
-  return [...used].sort((a, b) => a.localeCompare(b, 'tr'));
+  return [...used].sort(kategoriKarsilastir);
 }
 
 function renderChips() {
@@ -205,16 +215,18 @@ function matches(r) {
 function renderList() {
   renderChips();
   const list = state.recipes.filter(matches);
-  $('cards').innerHTML = list.map((r) => `
-    <li><button class="card${r.kapak ? ' has-img' : ''}" data-id="${esc(r.id)}">
-      ${r.kapak ? `<img class="card-img" src="${esc(fileUrl(r, 'kapak', '400x400f'))}" alt="" loading="lazy">` : ''}
-      <div class="card-body">
-      ${r.category ? `<div class="card-cat">${esc(r.category)}${r.favorite ? ' <span class="card-fav" aria-label="favori">♥</span>' : ''}</div>`
-                   : (r.favorite ? '<div class="card-cat card-fav">♥</div>' : '')}
-      <div class="card-title">${esc(r.title)}</div>
-      ${(r.ingredients || []).length ? `<div class="card-sub">${esc(r.ingredients.join(' · '))}</div>` : ''}
-      </div>
-    </button></li>`).join('');
+  const gruplu = state.filter.category === 'Tümü' || state.filter.category === 'Favoriler';
+  if (gruplu) list.sort((a, b) => kategoriKarsilastir(a.category || '', b.category || ''));   // sıralama kararlı: grup içinde en yeni üstte
+  const adet = {};
+  for (const r of list) adet[r.category || ''] = (adet[r.category || ''] || 0) + 1;
+  let onceki = null;
+  $('cards').innerHTML = list.map((r) => {
+    const k = r.category || '';
+    const baslik = gruplu && k !== onceki
+      ? `<li class="grup-baslik"><h2>${esc(k || 'Diğer')}</h2><span>${adet[k]}</span></li>` : '';
+    onceki = k;
+    return baslik + kart(r, gruplu);
+  }).join('');
 
   renderJobs();
   const empty = $('empty');
@@ -223,6 +235,19 @@ function renderList() {
   empty.innerHTML = state.recipes.length
     ? `<strong>Eşleşen tarif yok</strong>Aramayı veya kategoriyi değiştir.`
     : `<strong>Henüz tarif yok</strong>“Tarif ekle” ile bir Instagram bağlantısı yapıştır; Claude videoyu izleyip tarifi çıkarsın.`;
+}
+
+function kart(r, gruplu = false) {
+  return `
+    <li><button class="card${r.kapak ? ' has-img' : ''}" data-id="${esc(r.id)}">
+      ${r.kapak ? `<img class="card-img" src="${esc(fileUrl(r, 'kapak', '400x400f'))}" alt="" loading="lazy">` : ''}
+      <div class="card-body">
+      ${r.category && !gruplu ? `<div class="card-cat">${esc(r.category)}${r.favorite ? ' <span class="card-fav" aria-label="favori">♥</span>' : ''}</div>`
+                   : (r.favorite ? '<div class="card-cat card-fav">♥</div>' : '')}
+      <div class="card-title">${esc(r.title)}</div>
+      ${(r.ingredients || []).length ? `<div class="card-sub">${esc(r.ingredients.join(' · '))}</div>` : ''}
+      </div>
+    </button></li>`;
 }
 
 $('cards').addEventListener('click', (e) => {
@@ -649,7 +674,14 @@ function confirmDialog(text, okLabel) {
 /* ---------- Başlat ---------- */
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  const ilkKontrol = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+    .then((reg) => reg.update()).catch(() => {});
+  // Yeni sürüm devreye girince bir kez yenile; eski dosyalar ekranda kalmasın.
+  let yenilendi = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (ilkKontrol && !yenilendi) { yenilendi = true; location.reload(); }
+  });
 }
 
 if (state.auth) {

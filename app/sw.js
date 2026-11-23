@@ -1,11 +1,11 @@
 /* Uygulama kabuğunu önbelleğe alır; tarif verisi (/api/) hiç önbelleğe alınmaz,
    uygulama son listeyi kendisi saklar. Dosyalar değişince SURUM'u artır. */
-const SURUM = 'tariflerim-v5';
+const SURUM = 'tariflerim-v6';
 const KABUK = ['./', 'index.html', 'app.css', 'app.js', 'manifest.json',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(SURUM).then((c) => c.addAll(KABUK)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(SURUM).then((c) => c.addAll(KABUK.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -26,7 +26,7 @@ self.addEventListener('fetch', (e) => {
   if (url.pathname.includes('/api/')) return;
   // Önce ağ (güncel sürüm gelsin), olmazsa önbellek.
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: 'no-cache' })
       .then((res) => {
         if (res.ok) { const copy = res.clone(); caches.open(SURUM).then((c) => c.put(e.request, copy)); }
         return res;

@@ -215,3 +215,9 @@ dialog p { margin: 0 0 16px; }
 .ig-metin { margin-top: 10px; font-size: 14px; }
 .ig-metin summary { cursor: pointer; color: var(--muted); padding: 4px 0; }
 .ig-metin textarea { margin-top: 8px; }
+
+/* Kategori başlıkları */
+.grup-baslik { display: flex; align-items: baseline; gap: 8px; margin: 14px 2px 0; }
+.grup-baslik:first-child { margin-top: 0; }
+.grup-baslik h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.grup-baslik span { color: var(--muted); font-size: 14px; }
