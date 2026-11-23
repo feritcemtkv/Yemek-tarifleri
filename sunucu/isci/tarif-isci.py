@@ -31,6 +31,8 @@ import wave
 from datetime import datetime
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))   # kapak.py
+
 EV = Path.home()
 SITE = EV / "tarif-site"
 PB = SITE / "pb" / "pocketbase"
@@ -101,6 +103,15 @@ class Sunucu:
 
     def guncelle(self, istek_id, **alanlar):
         return self.json("PATCH", f"/api/collections/istekler/records/{istek_id}", alanlar)
+
+    def istek_dosya(self, tarif_id, kapak_yolu):
+        """Bir tarifin kapağını değiştirir."""
+        sinir = uuid.uuid4().hex
+        govde = (f'--{sinir}\r\nContent-Disposition: form-data; name="kapak"; filename="kapak.jpg"\r\n'
+                 f"Content-Type: image/jpeg\r\n\r\n".encode() + Path(kapak_yolu).read_bytes()
+                 + f"\r\n--{sinir}--\r\n".encode())
+        return self.istek("PATCH", f"/api/collections/tarifler/records/{tarif_id}", govde,
+                          f"multipart/form-data; boundary={sinir}")
 
     def tarif_ekle(self, alanlar, dosyalar):
         sinir = uuid.uuid4().hex
@@ -364,6 +375,16 @@ def isle(sunucu: Sunucu, ist):
         }
         dosyalar = {}
         kapak = kapak_hazirla(klasor, video)
+        if video:
+            adim("Kapak seçiliyor")
+            try:
+                import kapak as kapak_secici
+                secilen, secim, neden = kapak_secici.en_iyi_kapak(klasor, alanlar["title"], kapak, video, CLAUDE)
+                if secilen:
+                    kapak = secilen
+                log("kapak:", secim, neden)
+            except Exception as e:  # kapak seçimi tarifi engellemesin
+                log("kapak seçilemedi:", str(e)[:200])
         if kapak:
             dosyalar["kapak"] = ("kapak.jpg", "image/jpeg", kapak)
         if video and video.stat().st_size < 290 * 1024 * 1024:
