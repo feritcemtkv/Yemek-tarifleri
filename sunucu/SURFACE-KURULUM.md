@@ -6,7 +6,9 @@ Uygulama `app/` klasöründe, sunucu dosyaları bu klasörde. Surface'taki LGS k
 
 - Surface'ta ayrı bir **PocketBase** süreci `127.0.0.1:8095` adresinde çalışır. Tarifler, kullanıcı
   girişi ve uygulama dosyaları buradan sunulur. GitHub'a ihtiyaç yoktur.
-- Cloudflare Tunnel `tarif.ogrencitakip.net.tr` adresini doğrudan bu porta bağlar. Apache kullanılmaz.
+- Uygulama yalnızca Tailscale ağındaki cihazlardan açılır: `https://surface.tail719fe2.ts.net`
+  (`tailscale serve --bg --https=443 http://127.0.0.1:8095`; bir kez `sudo tailscale set --operator=feritcem`).
+  İnternete açık değildir, Cloudflare kullanılmaz.
 - Yönetim paneli (`/_/`) ve yönetici girişi internetten kapalıdır (`pb_hooks/panel-kapat.pb.js`).
 - Dışarıdan kayıt olma kapalıdır. Tarifleri yalnızca giriş yapan kullanıcı görür.
 - Uygulama son tarif listesini telefonda da saklar. Surface'a ulaşamadığında da tarifler açılır.
