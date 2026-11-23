@@ -263,8 +263,7 @@ function renderDetail(r) {
     ${meta.length ? `<div class="meta">${meta.map(([k, v]) => `<span>${k === 'Porsiyon' ? `<span class="sr-only">${k}: </span>` : `<span class="muted">${k} </span>`}${esc(v)}</span>`).join('')}</div>` : ''}
     ${(r.ingredients || []).length ? `
       <h2>Malzemeler</h2>
-      <ul class="ing-list">${r.ingredients.map((i, n) =>
-        `<li><label><input type="checkbox" id="ing-${n}"><span>${esc(i)}</span></label></li>`).join('')}</ul>` : ''}
+      <ul class="ing-list">${r.ingredients.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : ''}
     ${steps.length ? `
       <h2>Hazırlanışı</h2>
       <ol class="step-list">${steps.map((s) => `<li><span>${esc(s)}</span></li>`).join('')}</ol>` : ''}
