@@ -1,6 +1,6 @@
 /* Uygulama kabuğunu önbelleğe alır; tarif verisi (/api/) hiç önbelleğe alınmaz,
    uygulama son listeyi kendisi saklar. Dosyalar değişince SURUM'u artır. */
-const SURUM = 'tariflerim-v4';
+const SURUM = 'tariflerim-v5';
 const KABUK = ['./', 'index.html', 'app.css', 'app.js', 'manifest.json',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 

@@ -31,6 +31,11 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const trLower = (s) => String(s ?? '').toLocaleLowerCase('tr');
+// Arama için: büyük/küçük harf ve Türkçe harf farkını yok say (ı=i, ş=s, ğ=g, ü=u, ö=o, ç=c).
+const katla = (s) => trLower(s)
+  .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const aramaMetni = new WeakMap();
 
 /* ---------- Sunucu ---------- */
 
@@ -189,8 +194,12 @@ function matches(r) {
   if (category === 'Favoriler' && !r.favorite) return false;
   if (category !== 'Tümü' && category !== 'Favoriler' && r.category !== category) return false;
   if (!q) return true;
-  const hay = trLower([r.title, r.category, r.notlar, ...(r.ingredients || [])].join(' '));
-  return trLower(q).split(/\s+/).every((w) => hay.includes(w));
+  let hay = aramaMetni.get(r);
+  if (hay === undefined) {
+    hay = katla([r.title, r.category, r.notlar, ...(r.ingredients || [])].join(' '));
+    aramaMetni.set(r, hay);
+  }
+  return katla(q).split(/\s+/).filter(Boolean).every((w) => hay.includes(w));
 }
 
 function renderList() {
@@ -222,10 +231,18 @@ $('cards').addEventListener('click', (e) => {
 });
 
 let searchTimer;
-$('search').addEventListener('input', (e) => {
+function aramayiUygula() {
   clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => { state.filter.q = e.target.value.trim(); renderList(); }, 120);
-});
+  searchTimer = setTimeout(() => {
+    const q = $('search').value.trim();
+    if (q === state.filter.q) return;
+    state.filter.q = q;
+    renderList();
+  }, 120);
+}
+// iPhone'da öneri çubuğu, dikte ve "Ara" tuşu her zaman 'input' olayı göndermiyor; hepsini dinle.
+for (const olay of ['input', 'change', 'search', 'keyup', 'compositionend']) $('search').addEventListener(olay, aramayiUygula);
+$('search').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('search').blur(); } });
 
 function setStatus(text) {
   $('status').hidden = !text;
