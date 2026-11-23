@@ -6,9 +6,12 @@ Uygulama `app/` klasöründe, sunucu dosyaları bu klasörde. Surface'taki LGS k
 
 - Surface'ta ayrı bir **PocketBase** süreci `127.0.0.1:8095` adresinde çalışır. Tarifler, kullanıcı
   girişi ve uygulama dosyaları buradan sunulur. GitHub'a ihtiyaç yoktur.
-- Uygulama yalnızca Tailscale ağındaki cihazlardan açılır: `https://surface.tail719fe2.ts.net`
-  (`tailscale serve --bg --https=443 http://127.0.0.1:8095`; bir kez `sudo tailscale set --operator=feritcem`).
-  İnternete açık değildir, Cloudflare kullanılmaz.
+- Uygulama Tailscale Funnel ile internetten açılır: `https://surface.tail719fe2.ts.net`
+  (`tailscale funnel --bg http://127.0.0.1:8095`; bir kez `sudo tailscale set --operator=feritcem`).
+  Telefonda Tailscale gerekmez. Yalnızca Tailscale ağına kapatmak için: `tailscale funnel reset` ve
+  `tailscale serve --bg --https=443 http://127.0.0.1:8095`. Cloudflare kullanılmaz.
+- Giriş denemeleri sınırlıdır (dakikada 5, ziyaretçi başına). PocketBase ayarlarında rate limit açık ve
+  `trustedProxy` olarak `X-Forwarded-For` tanımlı; 8095'e yalnızca yerel vekiller ulaştığı için güvenlidir.
 - Yönetim paneli (`/_/`) ve yönetici girişi internetten kapalıdır (`pb_hooks/panel-kapat.pb.js`).
 - Dışarıdan kayıt olma kapalıdır. Tarifleri yalnızca giriş yapan kullanıcı görür.
 - Uygulama son tarif listesini telefonda da saklar. Surface'a ulaşamadığında da tarifler açılır.
