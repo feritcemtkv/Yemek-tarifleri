@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tariflerim</title>
+<meta name="description" content="Kişisel tarif arşivi">
+<meta name="theme-color" content="#f6f3ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1816" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Tariflerim">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- Giriş -->
+<section id="view-login" class="view" hidden>
+  <div class="login">
+    <img src="icons/icon-192.png" alt="" class="login-icon" width="72" height="72">
+    <h1>Tariflerim</h1>
+    <p class="muted">Surface'taki tarif arşivine giriş yap.</p>
+    <form id="login-form" novalidate>
+      <label for="login-email">E-posta</label>
+      <input id="login-email" type="email" autocomplete="username" autocapitalize="off" required>
+      <label for="login-pass">Şifre</label>
+      <input id="login-pass" type="password" autocomplete="current-password" required>
+      <p id="login-error" class="error" role="alert" hidden></p>
+      <button type="submit" class="btn primary block" id="login-btn">Giriş yap</button>
+    </form>
+    <details class="server-box">
+      <summary>Sunucu adresi</summary>
+      <label for="login-server">Adres (boş bırakılırsa bu sayfanın adresi)</label>
+      <input id="login-server" type="url" placeholder="https://tarif.ornek.com" autocapitalize="off">
+    </details>
+  </div>
+</section>
+
+<!-- Liste -->
+<section id="view-list" class="view" hidden>
+  <header class="topbar">
+    <h1 class="title">Tariflerim</h1>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="btn-settings" aria-label="Ayarlar" title="Ayarlar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="search-wrap">
+    <label for="search" class="sr-only">Tariflerde ara</label>
+    <input id="search" type="search" placeholder="Tarif veya malzeme ara" autocomplete="off" enterkeyhint="search">
+  </div>
+  <nav class="chips" id="chips" aria-label="Kategoriler"></nav>
+  <p class="status" id="status" hidden></p>
+  <ul class="jobs" id="jobs" aria-label="Hazırlanan tarifler" aria-live="polite"></ul>
+  <ul class="cards" id="cards"></ul>
+  <div class="empty" id="empty" hidden></div>
+  <button class="fab" id="btn-add" aria-label="Yeni tarif ekle">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    <span>Tarif ekle</span>
+  </button>
+</section>
+
+<!-- Tarif ayrıntısı -->
+<section id="view-detail" class="view" hidden>
+  <header class="topbar">
+    <button class="icon-btn" data-back aria-label="Geri" title="Geri">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="btn-fav" aria-label="Favorilere ekle" title="Favori">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-edit" aria-label="Düzenle" title="Düzenle">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="M14 6l4 4"/></svg>
+      </button>
+    </div>
+  </header>
+  <article class="detail" id="detail"></article>
+</section>
+
+<!-- Ekle / düzenle -->
+<section id="view-edit" class="view" hidden>
+  <header class="topbar">
+    <button class="icon-btn" data-back aria-label="Vazgeç" title="Vazgeç">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <h1 class="title small" id="edit-title">Yeni tarif</h1>
+    <span class="topbar-spacer"></span>
+  </header>
+  <div class="form-page">
+    <form class="ai-box" id="ai-box" novalidate>
+      <label for="ig-url">Instagram bağlantısı</label>
+      <input id="ig-url" type="url" inputmode="url" autocapitalize="off" autocomplete="off" placeholder="https://www.instagram.com/reel/…">
+      <details class="ig-metin">
+        <summary>Bağlantı yerine tarif metni yapıştır</summary>
+        <label for="ig-metin" class="sr-only">Tarif metni</label>
+        <textarea id="ig-metin" rows="5" placeholder="Yabancı bir tarif, malzeme listesi…"></textarea>
+      </details>
+      <button type="submit" class="btn primary block" id="btn-ig">Claude'a izlet ve tarifi çıkar</button>
+      <p class="hint">Surface videoyu indirir. Açıklamada tarif varsa Türkçeye çevrilir, yoksa Claude videoyu izleyip tarifi çıkarır. Birkaç dakika sürebilir; bu sırada uygulamayı kapatabilirsin.</p>
+      <p id="ig-error" class="error" role="alert" hidden></p>
+    </form>
+    <h2 class="group-title" id="elle-baslik">Ya da elle yaz</h2>
+    <form id="edit-form" novalidate>
+      <label for="f-title">Tarif adı</label>
+      <input id="f-title" required>
+      <p class="error field-error" id="f-title-error" hidden>Tarif adını yaz.</p>
+      <label for="f-category">Kategori</label>
+      <input id="f-category" list="category-list" placeholder="Tatlılar, Ana Yemek…">
+      <datalist id="category-list"></datalist>
+      <label for="f-ingredients">Malzemeler <span class="muted">(her satıra bir tane)</span></label>
+      <textarea id="f-ingredients" rows="7"></textarea>
+      <label for="f-instructions">Hazırlanışı <span class="muted">(her adım ayrı satırda)</span></label>
+      <textarea id="f-instructions" rows="8"></textarea>
+      <div class="row3">
+        <div><label for="f-porsiyon">Porsiyon</label><input id="f-porsiyon" placeholder="4 kişilik"></div>
+        <div><label for="f-hazirlik">Hazırlık</label><input id="f-hazirlik" placeholder="15 dk"></div>
+        <div><label for="f-pisirme">Pişirme</label><input id="f-pisirme" placeholder="30 dk"></div>
+      </div>
+      <label for="f-notlar">Notlar <span class="muted">(isteğe bağlı)</span></label>
+      <textarea id="f-notlar" rows="3"></textarea>
+      <label for="f-thermomix">Thermomix adımları <span class="muted">(isteğe bağlı)</span></label>
+      <textarea id="f-thermomix" rows="3"></textarea>
+      <label for="f-kapak">Kapak fotoğrafı <span class="muted">(isteğe bağlı)</span></label>
+      <div class="kapak-sec">
+        <img id="f-kapak-onizleme" alt="" hidden>
+        <input id="f-kapak" type="file" accept="image/*">
+      </div>
+      <label for="f-url">Kaynak bağlantısı <span class="muted">(isteğe bağlı)</span></label>
+      <input id="f-url" type="url" inputmode="url" autocapitalize="off" placeholder="https://www.instagram.com/p/…">
+      <p id="edit-error" class="error" role="alert" hidden></p>
+      <button type="submit" class="btn primary block" id="btn-save">Tarifi kaydet</button>
+      <button type="button" class="btn danger-text block" id="btn-delete" hidden>Tarifi sil</button>
+    </form>
+  </div>
+</section>
+
+<!-- Ayarlar -->
+<section id="view-settings" class="view" hidden>
+  <header class="topbar">
+    <button class="icon-btn" data-back aria-label="Geri" title="Geri">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="title small">Ayarlar</h1>
+    <span class="topbar-spacer"></span>
+  </header>
+  <div class="form-page">
+    <h2 class="group-title">Yedek</h2>
+    <div class="group">
+      <button class="btn secondary block" id="btn-export">Tüm tarifleri indir (JSON)</button>
+      <label for="import-file" class="btn secondary block file-btn">Dosyadan tarif aktar</label>
+      <input id="import-file" type="file" accept="application/json,.json" class="sr-only">
+      <p class="hint">Eski arşivden veya indirilen yedekten gelen tarifler eklenir; mevcut tarifler silinmez.</p>
+      <p class="hint" id="import-status" role="status"></p>
+    </div>
+    <h2 class="group-title">Hesap</h2>
+    <div class="group">
+      <p class="hint" id="s-account"></p>
+      <button class="btn danger-text block" id="btn-logout">Çıkış yap</button>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<dialog id="confirm-dialog">
+  <form method="dialog">
+    <p id="confirm-text"></p>
+    <div class="dialog-actions">
+      <button value="cancel" class="btn secondary">Vazgeç</button>
+      <button value="ok" class="btn danger" id="confirm-ok">Sil</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
