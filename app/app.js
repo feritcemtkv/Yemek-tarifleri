@@ -240,7 +240,9 @@ function renderList() {
 function kart(r, gruplu = false) {
   return `
     <li><button class="card${r.kapak ? ' has-img' : ''}" data-id="${esc(r.id)}">
-      ${r.kapak ? `<img class="card-img" src="${esc(fileUrl(r, 'kapak', '400x400f'))}" alt="" loading="lazy">` : ''}
+      ${r.kapak ? `<img class="card-img" src="${esc(fileUrl(r, 'kapak', '400x400f'))}"
+        srcset="${esc(fileUrl(r, 'kapak', '400x400f'))} 400w, ${esc(fileUrl(r, 'kapak', '800x600'))} 800w"
+        sizes="(min-width: 760px) 440px, 76px" alt="" loading="lazy">` : ''}
       <div class="card-body">
       ${r.category && !gruplu ? `<div class="card-cat">${esc(r.category)}${r.favorite ? ' <span class="card-fav" aria-label="favori">♥</span>' : ''}</div>`
                    : (r.favorite ? '<div class="card-cat card-fav">♥</div>' : '')}
@@ -300,6 +302,7 @@ function renderDetail(r) {
   const meta = [['Porsiyon', r.porsiyon], ['Hazırlık', r.hazirlik], ['Pişirme', r.pisirme]].filter(([, v]) => v);
   $('detail').innerHTML = `
     ${media}
+    <div class="detail-body">
     ${r.category ? `<div class="card-cat">${esc(r.category)}</div>` : ''}
     <h1>${esc(r.title)}</h1>
     ${meta.length ? `<div class="meta">${meta.map(([k, v]) => `<span>${k === 'Porsiyon' ? `<span class="sr-only">${k}: </span>` : `<span class="muted">${k} </span>`}${esc(v)}</span>`).join('')}</div>` : ''}
@@ -316,7 +319,9 @@ function renderDetail(r) {
     ${safeUrl(r.url) ? `<a class="source-link" href="${esc(safeUrl(r.url))}" target="_blank" rel="noopener">Kaynağı aç ↗</a>` : ''}
     ${r.yazar ? `<div class="source-meta">@${esc(r.yazar.replace(/^@/, ''))}</div>` : ''}
     ${'wakeLock' in navigator ? `<label class="wake"><input type="checkbox" id="wake-toggle"> Pişirirken ekran kapanmasın</label>` : ''}
+    </div>
   `;
+  $('detail').classList.toggle('has-media', !!media);
   $('wake-toggle')?.addEventListener('change', (e) => (e.target.checked ? holdWake() : releaseWake()));
   setFavButton(r.favorite);
 }
