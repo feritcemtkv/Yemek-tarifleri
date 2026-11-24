@@ -183,7 +183,8 @@ function kategoriKarsilastir(a, b) {
 }
 
 // Kategori renkleri: et açık kırmızı, tavuk açık sarı, balık açık mavi, salata açık yeşil, makarna beyaz,
-// meze açık turuncu, çorba açık kahverengi.
+// meze açık turuncu, çorba açık kahverengi; atıştırmalık lavanta, sos turkuaz, kahvaltılık fıstık yeşili,
+// tatlı pembe, hamur işi buğday, içecek açık camgöbeği.
 function katRenk(c) {
   const k = katla(c || '');
   if (/^et\b|et yemeg|kirmizi et|biftek/.test(k)) return 'et';
@@ -193,6 +194,12 @@ function katRenk(c) {
   if (/makarna/.test(k)) return 'makarna';
   if (/meze/.test(k)) return 'meze';
   if (/corba/.test(k)) return 'corba';
+  if (/atistirmalik|aperatif|cerez/.test(k)) return 'atistirmalik';
+  if (/\bsos/.test(k)) return 'sos';
+  if (/kahvalti/.test(k)) return 'kahvalti';
+  if (/tatli|pasta|kurabiye|kek\b/.test(k)) return 'tatli';
+  if (/hamur|borek|ekmek|pide/.test(k)) return 'hamur';
+  if (/icecek|kokteyl|smoothie/.test(k)) return 'icecek';
   return '';
 }
 const katSinif = (c) => (katRenk(c) ? ` kat-${katRenk(c)}` : '');

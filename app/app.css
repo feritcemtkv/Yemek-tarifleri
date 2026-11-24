@@ -299,6 +299,12 @@ dialog p { margin: 0 0 16px; }
   --makarna-bg: #ffffff; --makarna-ink: #6b6259;
   --meze-bg: #ffe6cf;    --meze-ink: #b35309;
   --corba-bg: #eedfd0;   --corba-ink: #7a4a26;
+  --atistirmalik-bg: #ece6fb;  --atistirmalik-ink: #6b46c1;
+  --sos-bg: #d9f2ee;  --sos-ink: #0f766e;
+  --kahvalti-bg: #eef5d0;  --kahvalti-ink: #5d7512;
+  --tatli-bg: #fde3ef;  --tatli-ink: #be185d;
+  --hamur-bg: #f3e9d6;  --hamur-ink: #8a6532;
+  --icecek-bg: #dcf4f9;  --icecek-ink: #0e7490;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -309,6 +315,12 @@ dialog p { margin: 0 0 16px; }
     --makarna-bg: #2b2826; --makarna-ink: #e5dfd8;
     --meze-bg: #3d2614;    --meze-ink: #f8b072;
     --corba-bg: #33261c;   --corba-ink: #d9b08c;
+    --atistirmalik-bg: #2a2340;  --atistirmalik-ink: #c4b2f5;
+    --sos-bg: #15312d;  --sos-ink: #7fd6c8;
+    --kahvalti-bg: #2b3214;  --kahvalti-ink: #c5dc7a;
+    --tatli-bg: #3d1a2a;  --tatli-ink: #f59ac4;
+    --hamur-bg: #332a1c;  --hamur-ink: #dcc092;
+    --icecek-bg: #14303a;  --icecek-ink: #79d0e4;
   }
 }
 .kat-et      { --kat-bg: var(--et-bg);      --kat-ink: var(--et-ink); }
@@ -318,6 +330,12 @@ dialog p { margin: 0 0 16px; }
 .kat-makarna { --kat-bg: var(--makarna-bg); --kat-ink: var(--makarna-ink); }
 .kat-meze    { --kat-bg: var(--meze-bg);    --kat-ink: var(--meze-ink); }
 .kat-corba   { --kat-bg: var(--corba-bg);   --kat-ink: var(--corba-ink); }
+.kat-atistirmalik { --kat-bg: var(--atistirmalik-bg); --kat-ink: var(--atistirmalik-ink); }
+.kat-sos { --kat-bg: var(--sos-bg); --kat-ink: var(--sos-ink); }
+.kat-kahvalti { --kat-bg: var(--kahvalti-bg); --kat-ink: var(--kahvalti-ink); }
+.kat-tatli { --kat-bg: var(--tatli-bg); --kat-ink: var(--tatli-ink); }
+.kat-hamur { --kat-bg: var(--hamur-bg); --kat-ink: var(--hamur-ink); }
+.kat-icecek { --kat-bg: var(--icecek-bg); --kat-ink: var(--icecek-ink); }
 
 /* Kartlar kendi kategorisinin renginde */
 .card[class*="kat-"] { background: var(--kat-bg); border-color: color-mix(in srgb, var(--kat-ink) 18%, transparent); }
@@ -351,6 +369,12 @@ body[data-kat="salata"]  { --sayfa: var(--salata-bg);  --sayfa-ink: var(--salata
 body[data-kat="makarna"] { --sayfa: var(--makarna-bg); --sayfa-ink: var(--makarna-ink); }
 body[data-kat="meze"]    { --sayfa: var(--meze-bg);    --sayfa-ink: var(--meze-ink); }
 body[data-kat="corba"]   { --sayfa: var(--corba-bg);   --sayfa-ink: var(--corba-ink); }
+body[data-kat="atistirmalik"] { --sayfa: var(--atistirmalik-bg); --sayfa-ink: var(--atistirmalik-ink); }
+body[data-kat="sos"] { --sayfa: var(--sos-bg); --sayfa-ink: var(--sos-ink); }
+body[data-kat="kahvalti"] { --sayfa: var(--kahvalti-bg); --sayfa-ink: var(--kahvalti-ink); }
+body[data-kat="tatli"] { --sayfa: var(--tatli-bg); --sayfa-ink: var(--tatli-ink); }
+body[data-kat="hamur"] { --sayfa: var(--hamur-bg); --sayfa-ink: var(--hamur-ink); }
+body[data-kat="icecek"] { --sayfa: var(--icecek-bg); --sayfa-ink: var(--icecek-ink); }
 /* Yan menü de seçilen yemeğin renginde (sayfadan bir ton koyu) */
 body[data-kat]:not([data-kat=""]) .sidebar {
   background: color-mix(in srgb, var(--sayfa-ink) 9%, var(--sayfa));
