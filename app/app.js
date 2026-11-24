@@ -190,14 +190,29 @@ function renderChips() {
   if (!cats.includes(state.filter.category)) state.filter.category = 'Tümü';
   $('chips').innerHTML = cats.map((c) =>
     `<button class="chip" aria-pressed="${c === state.filter.category}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+  renderSidebar(cats);
 }
 
-$('chips').addEventListener('click', (e) => {
+// Bilgisayarda soldaki menü: kategoriler ve tarif sayıları.
+function renderSidebar(cats) {
+  const say = (c) => c === 'Tümü' ? state.recipes.length
+    : c === 'Favoriler' ? state.recipes.filter((r) => r.favorite).length
+    : state.recipes.filter((r) => r.category === c).length;
+  const satir = (c) => `<button class="side-link" aria-current="${c === state.filter.category ? 'true' : 'false'}" data-cat="${esc(c)}">
+      <span>${esc(c)}</span><span class="side-count">${say(c)}</span></button>`;
+  $('side-nav').innerHTML = satir('Tümü') + satir('Favoriler')
+    + `<div class="side-title">Kategoriler</div>` + cats.slice(2).map(satir).join('');
+}
+
+function kategoriSec(e) {
   const b = e.target.closest('[data-cat]');
   if (!b) return;
   state.filter.category = b.dataset.cat;
   renderList();
-});
+  if (e.currentTarget.id === 'side-nav') window.scrollTo({ top: 0 });
+}
+$('chips').addEventListener('click', kategoriSec);
+$('side-nav').addEventListener('click', kategoriSec);
 
 function matches(r) {
   const { q, category } = state.filter;
@@ -427,6 +442,7 @@ function toBody(data) {
 }
 
 $('btn-add').addEventListener('click', () => openEdit(null));
+$('side-add').addEventListener('click', () => openEdit(null));
 
 $('f-title').addEventListener('blur', () => { $('f-title-error').hidden = !!$('f-title').value.trim(); });
 $('f-title').addEventListener('input', () => { if ($('f-title').value.trim()) $('f-title-error').hidden = true; });
@@ -579,6 +595,7 @@ async function pollJobs() {
 
 /* ---------- Ayarlar, yedek ---------- */
 
+$('side-settings').addEventListener('click', () => $('btn-settings').click());
 $('btn-settings').addEventListener('click', () => {
   $('s-account').textContent = `${state.auth?.email || ''} · ${apiBase()}`;
   $('import-status').textContent = '';
