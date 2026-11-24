@@ -293,18 +293,22 @@ dialog p { margin: 0 0 16px; }
 /* ---------- Kategori renkleri ---------- */
 :root {
   --et-bg: #fdecea;      --et-ink: #b4372b;
-  --tavuk-bg: #fdf5d6;   --tavuk-ink: #9a6b00;
+  --tavuk-bg: #fff4b3;   --tavuk-ink: #8a6a00;
   --deniz-bg: #e4f0fb;   --deniz-ink: #23629f;
   --salata-bg: #e7f5e3;  --salata-ink: #2f7a3a;
   --makarna-bg: #ffffff; --makarna-ink: #6b6259;
+  --meze-bg: #ffe6cf;    --meze-ink: #b35309;
+  --corba-bg: #eedfd0;   --corba-ink: #7a4a26;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --et-bg: #3a2220;      --et-ink: #f4a39a;
-    --tavuk-bg: #3a3218;   --tavuk-ink: #f2cf6b;
+    --tavuk-bg: #3d3412;   --tavuk-ink: #f7d755;
     --deniz-bg: #1b2d3d;   --deniz-ink: #8cc2f0;
     --salata-bg: #1d3220;  --salata-ink: #93d39c;
     --makarna-bg: #2b2826; --makarna-ink: #e5dfd8;
+    --meze-bg: #3d2614;    --meze-ink: #f8b072;
+    --corba-bg: #33261c;   --corba-ink: #d9b08c;
   }
 }
 .kat-et      { --kat-bg: var(--et-bg);      --kat-ink: var(--et-ink); }
@@ -312,6 +316,8 @@ dialog p { margin: 0 0 16px; }
 .kat-deniz   { --kat-bg: var(--deniz-bg);   --kat-ink: var(--deniz-ink); }
 .kat-salata  { --kat-bg: var(--salata-bg);  --kat-ink: var(--salata-ink); }
 .kat-makarna { --kat-bg: var(--makarna-bg); --kat-ink: var(--makarna-ink); }
+.kat-meze    { --kat-bg: var(--meze-bg);    --kat-ink: var(--meze-ink); }
+.kat-corba   { --kat-bg: var(--corba-bg);   --kat-ink: var(--corba-ink); }
 
 /* Kartlar kendi kategorisinin renginde */
 .card[class*="kat-"] { background: var(--kat-bg); border-color: color-mix(in srgb, var(--kat-ink) 18%, transparent); }
@@ -343,6 +349,21 @@ body[data-kat="tavuk"]   { --sayfa: var(--tavuk-bg);   --sayfa-ink: var(--tavuk-
 body[data-kat="deniz"]   { --sayfa: var(--deniz-bg);   --sayfa-ink: var(--deniz-ink); }
 body[data-kat="salata"]  { --sayfa: var(--salata-bg);  --sayfa-ink: var(--salata-ink); }
 body[data-kat="makarna"] { --sayfa: var(--makarna-bg); --sayfa-ink: var(--makarna-ink); }
+body[data-kat="meze"]    { --sayfa: var(--meze-bg);    --sayfa-ink: var(--meze-ink); }
+body[data-kat="corba"]   { --sayfa: var(--corba-bg);   --sayfa-ink: var(--corba-ink); }
+/* Yan menü de seçilen yemeğin renginde (sayfadan bir ton koyu) */
+body[data-kat]:not([data-kat=""]) .sidebar {
+  background: color-mix(in srgb, var(--sayfa-ink) 9%, var(--sayfa));
+  border-right-color: color-mix(in srgb, var(--sayfa-ink) 22%, transparent);
+  transition: background-color 0.2s ease;
+}
+body[data-kat]:not([data-kat=""]) .side-brand { color: var(--sayfa-ink); }
+body[data-kat]:not([data-kat=""]) .side-link:hover { background: color-mix(in srgb, var(--sayfa-ink) 12%, var(--sayfa)); }
+body[data-kat]:not([data-kat=""]) .side-link[aria-current="true"] { background: var(--sayfa-ink); color: var(--sayfa); }
+body[data-kat]:not([data-kat=""]) .side-link[aria-current="true"] .side-count { color: var(--sayfa); }
+body[data-kat]:not([data-kat=""]) .side-link[aria-current="true"]::before { border-color: var(--sayfa); }
+body[data-kat]:not([data-kat=""]) .side-add { background: var(--sayfa-ink); color: var(--sayfa); }
+body[data-kat="makarna"] .sidebar { background: var(--makarna-bg); }
 body[data-kat]:not([data-kat=""]) { background: var(--sayfa); transition: background-color 0.2s ease; }
 body[data-kat]:not([data-kat=""]) .topbar { background: color-mix(in srgb, var(--sayfa) 88%, transparent); }
 body[data-kat]:not([data-kat=""]) #search { background: color-mix(in srgb, var(--sayfa-ink) 8%, var(--sayfa)); }

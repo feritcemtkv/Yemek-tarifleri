@@ -182,7 +182,8 @@ function kategoriKarsilastir(a, b) {
   return kategoriSirasi(a) - kategoriSirasi(b) || String(a).localeCompare(String(b), 'tr');
 }
 
-// Kategori renkleri: et açık kırmızı, tavuk açık sarı, balık açık mavi, salata açık yeşil, makarna beyaz.
+// Kategori renkleri: et açık kırmızı, tavuk açık sarı, balık açık mavi, salata açık yeşil, makarna beyaz,
+// meze açık turuncu, çorba açık kahverengi.
 function katRenk(c) {
   const k = katla(c || '');
   if (/^et\b|et yemeg|kirmizi et|biftek/.test(k)) return 'et';
@@ -190,6 +191,8 @@ function katRenk(c) {
   if (/deniz|balik|baliklar/.test(k)) return 'deniz';
   if (/salata/.test(k)) return 'salata';
   if (/makarna/.test(k)) return 'makarna';
+  if (/meze/.test(k)) return 'meze';
+  if (/corba/.test(k)) return 'corba';
   return '';
 }
 const katSinif = (c) => (katRenk(c) ? ` kat-${katRenk(c)}` : '');
