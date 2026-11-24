@@ -289,3 +289,66 @@ dialog p { margin: 0 0 16px; }
   #view-list .topbar, #view-list .chips, #view-list .fab { display: none; }
   #view-list .search-wrap { padding-top: 24px; }
 }
+
+/* ---------- Kategori renkleri ---------- */
+:root {
+  --et-bg: #fdecea;      --et-ink: #b4372b;
+  --tavuk-bg: #fdf5d6;   --tavuk-ink: #9a6b00;
+  --deniz-bg: #e4f0fb;   --deniz-ink: #23629f;
+  --salata-bg: #e7f5e3;  --salata-ink: #2f7a3a;
+  --makarna-bg: #ffffff; --makarna-ink: #6b6259;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --et-bg: #3a2220;      --et-ink: #f4a39a;
+    --tavuk-bg: #3a3218;   --tavuk-ink: #f2cf6b;
+    --deniz-bg: #1b2d3d;   --deniz-ink: #8cc2f0;
+    --salata-bg: #1d3220;  --salata-ink: #93d39c;
+    --makarna-bg: #2b2826; --makarna-ink: #e5dfd8;
+  }
+}
+.kat-et      { --kat-bg: var(--et-bg);      --kat-ink: var(--et-ink); }
+.kat-tavuk   { --kat-bg: var(--tavuk-bg);   --kat-ink: var(--tavuk-ink); }
+.kat-deniz   { --kat-bg: var(--deniz-bg);   --kat-ink: var(--deniz-ink); }
+.kat-salata  { --kat-bg: var(--salata-bg);  --kat-ink: var(--salata-ink); }
+.kat-makarna { --kat-bg: var(--makarna-bg); --kat-ink: var(--makarna-ink); }
+
+/* Kartlar kendi kategorisinin renginde */
+.card[class*="kat-"] { background: var(--kat-bg); border-color: color-mix(in srgb, var(--kat-ink) 18%, transparent); }
+.card[class*="kat-"] .card-cat { color: var(--kat-ink); }
+.card.kat-makarna { border-color: var(--line); }
+
+/* Kategori başlıkları */
+.grup-baslik[class*="kat-"] h2 { color: var(--kat-ink); }
+.grup-baslik[class*="kat-"]::before {
+  content: ""; width: 12px; height: 12px; border-radius: 999px; align-self: center;
+  background: var(--kat-bg); border: 2px solid var(--kat-ink);
+}
+
+/* Kategori düğmeleri ve yan menü */
+.chip[class*="kat-"] { background: var(--kat-bg); border-color: color-mix(in srgb, var(--kat-ink) 30%, transparent); }
+.chip[class*="kat-"][aria-pressed="true"] { background: var(--kat-ink); color: var(--kat-bg); border-color: var(--kat-ink); }
+.side-link[class*="kat-"]::before {
+  content: ""; width: 10px; height: 10px; border-radius: 999px; flex: none; margin-right: -2px;
+  background: var(--kat-bg); border: 2px solid var(--kat-ink);
+}
+.side-link[class*="kat-"] > span:first-child { flex: 1; }
+.side-link[class*="kat-"]:hover { background: var(--kat-bg); }
+.side-link[class*="kat-"][aria-current="true"] { background: var(--kat-bg); color: var(--kat-ink); }
+.side-link[class*="kat-"][aria-current="true"] .side-count { color: var(--kat-ink); }
+
+/* Bir kategori seçilince ya da o kategoriden bir tarif açılınca bütün sayfa o renge bürünür */
+body[data-kat="et"]      { --sayfa: var(--et-bg);      --sayfa-ink: var(--et-ink); }
+body[data-kat="tavuk"]   { --sayfa: var(--tavuk-bg);   --sayfa-ink: var(--tavuk-ink); }
+body[data-kat="deniz"]   { --sayfa: var(--deniz-bg);   --sayfa-ink: var(--deniz-ink); }
+body[data-kat="salata"]  { --sayfa: var(--salata-bg);  --sayfa-ink: var(--salata-ink); }
+body[data-kat="makarna"] { --sayfa: var(--makarna-bg); --sayfa-ink: var(--makarna-ink); }
+body[data-kat]:not([data-kat=""]) { background: var(--sayfa); transition: background-color 0.2s ease; }
+body[data-kat]:not([data-kat=""]) .topbar { background: color-mix(in srgb, var(--sayfa) 88%, transparent); }
+body[data-kat]:not([data-kat=""]) #search { background: color-mix(in srgb, var(--sayfa-ink) 8%, var(--sayfa)); }
+body[data-kat]:not([data-kat=""]) #view-list .card { background: var(--surface); }
+body[data-kat]:not([data-kat=""]) .detail-body > .card-cat { color: var(--sayfa-ink); }
+body[data-kat]:not([data-kat=""]) .meta span,
+body[data-kat]:not([data-kat=""]) .note { background: color-mix(in srgb, var(--sayfa-ink) 10%, var(--sayfa)); }
+body[data-kat="makarna"] .meta span, body[data-kat="makarna"] .note { background: var(--surface-2); }
+@media (prefers-reduced-motion: reduce) { body[data-kat] { transition: none; } }

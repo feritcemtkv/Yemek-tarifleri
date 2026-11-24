@@ -150,6 +150,8 @@ const VIEWS = ['login', 'list', 'detail', 'edit', 'settings'];
 
 function go(view, { push = true } = {}) {
   for (const v of VIEWS) $('view-' + v).hidden = v !== view;
+  document.body.dataset.kat = view === 'list' ? katRenk(state.filter.category)
+    : view === 'detail' && state.current ? katRenk(state.current.category) : '';
   if (view !== 'detail') { releaseWake(); document.querySelectorAll('#detail video').forEach((v) => v.pause()); }
   if (push && location.hash !== '#' + view) history.pushState({ view }, '', '#' + view);
   window.scrollTo(0, 0);
@@ -180,6 +182,18 @@ function kategoriKarsilastir(a, b) {
   return kategoriSirasi(a) - kategoriSirasi(b) || String(a).localeCompare(String(b), 'tr');
 }
 
+// Kategori renkleri: et açık kırmızı, tavuk açık sarı, balık açık mavi, salata açık yeşil, makarna beyaz.
+function katRenk(c) {
+  const k = katla(c || '');
+  if (/^et\b|et yemeg|kirmizi et|biftek/.test(k)) return 'et';
+  if (/tavuk|pilic/.test(k)) return 'tavuk';
+  if (/deniz|balik|baliklar/.test(k)) return 'deniz';
+  if (/salata/.test(k)) return 'salata';
+  if (/makarna/.test(k)) return 'makarna';
+  return '';
+}
+const katSinif = (c) => (katRenk(c) ? ` kat-${katRenk(c)}` : '');
+
 function categories() {
   const used = new Set(state.recipes.map((r) => r.category).filter(Boolean));
   return [...used].sort(kategoriKarsilastir);
@@ -189,7 +203,8 @@ function renderChips() {
   const cats = ['Tümü', 'Favoriler', ...categories()];
   if (!cats.includes(state.filter.category)) state.filter.category = 'Tümü';
   $('chips').innerHTML = cats.map((c) =>
-    `<button class="chip" aria-pressed="${c === state.filter.category}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+    `<button class="chip${katSinif(c)}" aria-pressed="${c === state.filter.category}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+  if (!$('view-list').hidden) document.body.dataset.kat = katRenk(state.filter.category);
   renderSidebar(cats);
 }
 
@@ -198,7 +213,7 @@ function renderSidebar(cats) {
   const say = (c) => c === 'Tümü' ? state.recipes.length
     : c === 'Favoriler' ? state.recipes.filter((r) => r.favorite).length
     : state.recipes.filter((r) => r.category === c).length;
-  const satir = (c) => `<button class="side-link" aria-current="${c === state.filter.category ? 'true' : 'false'}" data-cat="${esc(c)}">
+  const satir = (c) => `<button class="side-link${katSinif(c)}" aria-current="${c === state.filter.category ? 'true' : 'false'}" data-cat="${esc(c)}">
       <span>${esc(c)}</span><span class="side-count">${say(c)}</span></button>`;
   $('side-nav').innerHTML = satir('Tümü') + satir('Favoriler')
     + `<div class="side-title">Kategoriler</div>` + cats.slice(2).map(satir).join('');
@@ -238,7 +253,7 @@ function renderList() {
   $('cards').innerHTML = list.map((r) => {
     const k = r.category || '';
     const baslik = gruplu && k !== onceki
-      ? `<li class="grup-baslik"><h2>${esc(k || 'Diğer')}</h2><span>${adet[k]}</span></li>` : '';
+      ? `<li class="grup-baslik${katSinif(k)}"><h2>${esc(k || 'Diğer')}</h2><span>${adet[k]}</span></li>` : '';
     onceki = k;
     return baslik + kart(r, gruplu);
   }).join('');
@@ -254,7 +269,7 @@ function renderList() {
 
 function kart(r, gruplu = false) {
   return `
-    <li><button class="card${r.kapak ? ' has-img' : ''}" data-id="${esc(r.id)}">
+    <li><button class="card${r.kapak ? ' has-img' : ''}${katSinif(r.category)}" data-id="${esc(r.id)}">
       ${r.kapak ? `<img class="card-img" src="${esc(fileUrl(r, 'kapak', '400x400f'))}"
         srcset="${esc(fileUrl(r, 'kapak', '400x400f'))} 400w, ${esc(fileUrl(r, 'kapak', '800x600'))} 800w"
         sizes="(min-width: 760px) 440px, 76px" alt="" loading="lazy">` : ''}
@@ -337,6 +352,7 @@ function renderDetail(r) {
     </div>
   `;
   $('detail').classList.toggle('has-media', !!media);
+
   $('wake-toggle')?.addEventListener('change', (e) => (e.target.checked ? holdWake() : releaseWake()));
   setFavButton(r.favorite);
 }
