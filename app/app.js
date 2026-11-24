@@ -233,6 +233,8 @@ function kategoriSec(e) {
   const b = e.target.closest('[data-cat]');
   if (!b) return;
   state.filter.category = b.dataset.cat;
+  // Kategori seçince eski arama metni listeyi boş göstermesin.
+  if (state.filter.q || $('search').value) { $('search').value = ''; state.filter.q = ''; }
   renderList();
   if (e.currentTarget.id === 'side-nav') window.scrollTo({ top: 0 });
 }
@@ -273,7 +275,9 @@ function renderList() {
   if (list.length) { empty.hidden = true; return; }
   empty.hidden = false;
   empty.innerHTML = state.recipes.length
-    ? `<strong>Eşleşen tarif yok</strong>Aramayı veya kategoriyi değiştir.`
+    ? (state.filter.q
+      ? `<strong>“${esc(state.filter.q)}” için tarif yok</strong>${state.filter.category !== 'Tümü' ? `${esc(state.filter.category)} içinde arandı. ` : ''}<button class="btn secondary" id="aramayi-temizle">Aramayı temizle</button>`
+      : `<strong>Bu kategoride tarif yok</strong>`)
     : `<strong>Henüz tarif yok</strong>“Tarif ekle” ile bir Instagram bağlantısı yapıştır; Claude videoyu izleyip tarifi çıkarsın.`;
 }
 
@@ -291,6 +295,11 @@ function kart(r, gruplu = false) {
       </div>
     </button></li>`;
 }
+
+$('empty').addEventListener('click', (e) => {
+  if (e.target.id !== 'aramayi-temizle') return;
+  $('search').value = ''; state.filter.q = ''; renderList(); $('search').focus();
+});
 
 $('cards').addEventListener('click', (e) => {
   const b = e.target.closest('[data-id]');

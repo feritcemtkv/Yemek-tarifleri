@@ -60,9 +60,11 @@ def malzeme_metni(m):
         return m.strip()
     miktar, birim, ad = (str(m.get(k) or '').strip() for k in ('miktar', 'birim', 'ad'))
     gram = str(m.get('gram_karsiligi') or '').strip()
+    # "360 g", "360g", "360 gr" gibi birimli yazılmış değerlerde birimi tekrar ekleme
+    gram_sayi = re.sub(r'\s*(g|gr|gram)\.?$', '', gram, flags=re.I).strip()
     metin = ' '.join(x for x in (miktar, birim, ad) if x)
-    if gram and not (birim in ('gram', 'g', 'gr') and gram == miktar):
-        metin += f' ({gram} g)'
+    if gram_sayi and not (birim in ('gram', 'g', 'gr') and gram_sayi == miktar):
+        metin += f' ({gram_sayi} g)'
     return metin
 
 

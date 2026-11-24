@@ -397,3 +397,4 @@ body[data-kat]:not([data-kat=""]) .meta span,
 body[data-kat]:not([data-kat=""]) .note { background: color-mix(in srgb, var(--sayfa-ink) 10%, var(--sayfa)); }
 body[data-kat="makarna"] .meta span, body[data-kat="makarna"] .note { background: var(--surface-2); }
 @media (prefers-reduced-motion: reduce) { body[data-kat] { transition: none; } }
+.empty .btn { display: flex; margin: 14px auto 0; }
